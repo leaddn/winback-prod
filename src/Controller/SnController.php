@@ -148,31 +148,6 @@ class SnController extends AbstractController
         return $this->json($data);
     }
 
-    #[Route('/sn_check_copy/{sn}', name: 'sn_check_copy{sn}')]
-    public function snCheckOne(SnRepository $snRepository, $sn)
-    {
-
-        $device = $snRepository->findOneBy(["sn"=>$sn]);
-        $data = '';
-
-        if ($device!=null) {
-            $data = [
-                'serial_number' => $device->getSn(),
-                'device_type' => $device->getDevice(),
-                'main_type' => $device->getSubtype(),
-                'country' => $device->getCountry(),
-                'creation_date' => $device->getCreationDate(),
-                'code_client' => $device->getClientCode()
-            ];
-            return $this->json($data);
-        }
-        else {
-            return new Response(
-                '<html><body>Serial Number not present in database: '.$sn.' <br>Please contact the technical teams.</body></html>'
-            );
-        }
-
-    }
 
     #[Route('/sn_check/{sn}', name: 'sn_check{sn}')]
     public function snCheckOneCopy(SnRepository $snRepository, $sn)

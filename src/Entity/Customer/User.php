@@ -118,10 +118,6 @@ class User implements UserInterface
      * @see UserInterface
      */
     
-    /**
-     * @Route ("/get/auth/admin/realms/{realm}/users/{user-uuid}/role-mappings/clients/{client-uuid}")
-     */
-    
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -131,18 +127,6 @@ class User implements UserInterface
         return array_unique($roles);
     }
     
-    /*
-    public function getRoles(): array
-    {
-        //keycloak_role -> name
-        //$client->request('GET', '/api/users/'.$user->getId());
-        $client->request('GET', "/auth/admin/realms/{realm}/users/{user-uuid}/role-mappings/clients/{client-uuid}");
-        $roles = $this->getDoctrine()->getRepository('???:???')->find($role);
-        // guarantee every user at least has ROLE_USER
-        //$roles[] = "ROLE_USER";
-        return array_unique($roles);
-    }
-    */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;

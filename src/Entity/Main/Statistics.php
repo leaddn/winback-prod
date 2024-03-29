@@ -13,9 +13,10 @@ class Statistics
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    /*
     #[ORM\ManyToOne(targetEntity: Device::class, inversedBy: 'statistics')]
     private $sn;
-
+    */
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $version;
 
@@ -51,6 +52,7 @@ class Statistics
         return $this->id;
     }
 
+    /*
     public function getSn(): ?Device
     {
         return $this->sn;
@@ -62,7 +64,7 @@ class Statistics
 
         return $this;
     }
-
+    */
     public function getVersion(): ?string
     {
         return $this->version;

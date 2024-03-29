@@ -10,7 +10,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: DeviceRepository::class)]
 #[ORM\Table(name:"`device`")]
-//#[ORM\Table(name:"device", indexes:#[ORM\Index(columns:["sn", "version"], flags:"fulltext")])]
 /**
  * @ORM\Table(name="device", indexes={@ORM\Index(columns={"sn", "version"}, flags={"fulltext"})})
  */
@@ -66,9 +65,6 @@ class Device
     private $updated_at;
 
     
-    //#[ORM\OneToMany(mappedBy: 'sn', targetEntity: Statistics::class)]
-    //private $statistics;
-    
     #[ORM\Column(type: 'boolean', name:"`is_active`")]
     private $isActive = false;
 
@@ -94,15 +90,12 @@ class Device
     #[ORM\Column(type: 'string', length: 400, nullable: true)]
     private $comment;
 
-    #[ORM\Column(type: 'string', length: 400, nullable: true)]
-    private $update_comment;
-
-    #[ORM\OneToMany(mappedBy: 'deviceId', targetEntity: DeviceServer::class)]
+    #[ORM\OneToMany(mappedBy: 'device_id', targetEntity: DeviceServer::class)]
     private Collection $deviceServers;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $country = null;
-
+    
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $city = null;
 
@@ -280,38 +273,6 @@ class Device
         return $this->updated_at;
     }
 
-    
-    /*
-    @return Collection<int, Statistics>
-     */
-    /*
-    public function getStatistics(): Collection
-    {
-        return $this->statistics;
-    }
-
-    public function addStatistic(Statistics $statistic): self
-    {
-        if (!$this->statistics->contains($statistic)) {
-            $this->statistics[] = $statistic;
-            $statistic->setSn($this);
-        }
-
-        return $this;
-    }
-
-    public function removeStatistic(Statistics $statistic): self
-    {
-        if ($this->statistics->removeElement($statistic)) {
-            // set the owning side to null (unless already changed)
-            if ($statistic->getSn() === $this) {
-                $statistic->setSn(null);
-            }
-        }
-
-        return $this;
-    }
-    */
     public function getIsActive(): ?bool
     {
         return $this->isActive;
@@ -420,20 +381,6 @@ class Device
         return $this;
     }
 
-    /*
-    public function getUpdateComment(): ?string
-    {
-        return $this->update_comment;
-    }
-
-    public function setUpdateComment($update_comment): self
-    {
-        $this->update_comment = $update_comment;
-
-        return $this;
-    }
-    */
-
     /**
      * @return Collection<int, DeviceServer>
      */
@@ -477,7 +424,7 @@ class Device
 
         return $this;
     }
-
+    
     public function getCity(): ?string
     {
         return $this->city;
