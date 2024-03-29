@@ -137,8 +137,10 @@ class ProtocolController extends AbstractController
         6=>[
             'name'=>'NEUTRAL',
             'param2'=>[
-                0=>'ko',
-                1=>'ok'
+                //0=>'ko',
+                //1=>'ok'
+                0=>'',
+                1=>''
             ],
             'param3'=>[
                 0=>'LOW',
@@ -235,6 +237,7 @@ class ProtocolController extends AbstractController
     
             foreach ($dates as $key => $value) {
                 $protocols = $this->getMode($protocolRepository, $value, $sn);
+                //var_dump($protocols['protocol_id'][1]);
                 $protocols_array[$weekSlash[$key]] = $protocols;
             }
         }
@@ -393,6 +396,24 @@ class ProtocolController extends AbstractController
             }
             
         }
+        
+        foreach ($mode_obj as $protocolKey => $protocolValues) {
+            foreach ($protocolValues as $key => $value) {
+                //var_dump($value['step_id'][0]['way_id'][1]);
+                if ($key != sizeof($value['step_id'])) {
+                    foreach ($value['step_id'][$key]['way_id'] as $wayKey => $wayValue) {
+                        //var_dump($wayKey);
+                        if ($value['step_id'][$key]['way_id'][$wayKey]['mode_id'] == $value['step_id'][$key+1]['way_id'][$wayKey]['mode_id']) {
+                            //var_dump($value['step_id'][$key]['way_id'][1]);
+                            //var_dump($value['step_id'][$key+1]['way_id'][1]);
+                        }
+                    }
+
+                }
+            }
+            //var_dump($protocolValues['step_id']);
+        }
+        
         return $mode_obj;
     }
 

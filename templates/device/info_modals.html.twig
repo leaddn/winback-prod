@@ -9,7 +9,7 @@
                             <li class="nav-item">
                                 <button id="info-tab_{{device.id}}" class="nav-link active" aria-current="page" data-bs-toggle="tab" data-bs-target="#info_{{device.id}}" role="tab" aria-controls="info" aria-selected="true"><span class="text-center w-100 align-middle h6">{{ 'Info'|trans }}</span></button>
                             </li>
-                            {% if is_granted("ROLE_GOE") %}
+                            {% if is_granted("ROLE_GOE") or is_granted("ROLE_LOGISTIC") %}
                                 <li class="nav-item">
                                     <button id="version-tab_{{device.id}}" class="nav-link" aria-current="page" data-bs-toggle="tab" data-bs-target="#version2_{{device.id}}" role="tab" aria-controls="version2" aria-selected="true"><span class="text-center w-100 align-middle h6">{{ 'Version'|trans }}</span></button>
                                 </li>
@@ -47,7 +47,7 @@
                     <div class="tab-pane fade show active h-100 w-100" id="info_{{device.id}}" role="tabpanel" aria-labelledby="info-tab">
                     {% include 'device/_tab_info.html.twig' %}
                     </div>
-                    {% if is_granted("ROLE_GOE") %}
+                    {% if is_granted("ROLE_GOE") or is_granted("ROLE_LOGISTIC") %}
                         <div class="tab-pane fade h-100 w-100" id="version2_{{device.id}}" role="tabpanel" aria-labelledby="version-tab">
                         {% include 'device/_tab_version.html.twig' %}
                         </div>

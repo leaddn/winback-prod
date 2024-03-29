@@ -47,7 +47,7 @@
                                         {% endif %}
                                         <th scope="col" class="text-center text-nowrap">{{ 'Forced'|trans }}</th>
                                         <th scope="col" class="text-center text-nowrap">{{ 'Info'|trans }}</th>
-                                        {% if is_granted("ROLE_GOE") %}
+                                        {% if is_granted("ROLE_GOE") or is_granted("ROLE_LOGISTIC") %}
                                         <th scope="col" class="text-center text-nowrap">{{ 'Comment'|trans }}</th>
                                         {% endif %}
                                         {% if is_granted("ROLE_ADMIN") %}
@@ -145,7 +145,7 @@
                                                 <i class="fa-solid fa-circle-info"></i>
                                                 </a>
                                             </td>
-                                            {% if is_granted("ROLE_GOE") %}
+                                            {% if is_granted("ROLE_GOE") or is_granted("ROLE_LOGISTIC") %}
                                             <td class="text-center">
                                             <div class="input-group d-flex flex-nowrap text-break overflow-auto justify-content-center">
                                                 <textarea class="form-control comment_input" type="text" name="nm" data-id="{{device.id}}">{{device.comment}}</textarea> 
