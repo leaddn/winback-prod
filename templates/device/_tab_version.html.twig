@@ -1,5 +1,5 @@
 <div class="modal-body d-flex flex-column justify-content-between align-items-center">
-    {% if is_granted("ROLE_GOE")%}
+    {% if is_granted("ROLE_GOE") or is_granted("ROLE_LOGISTIC")%}
     <div class="row d-flex justify-content-between align-items-center w-100 h-100 grey-square">
         <div class="d-flex justify-content-left align-items-center mb-1">
             <b class="text-nowrap me-2">{{ 'Upload Version'|trans }} :</b>

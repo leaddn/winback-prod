@@ -21,12 +21,68 @@
                     {# Table of all records #}
                     <table class="table table-striped table-bordered table-hover w-100">
                     <thead>
+                    {{ form_start(form, {attr: { id: 'filter', style: "", class: "d-flex flex-column justify-content-center"}}) }}
+
+
+
+    
+    <!-- Error Type -->
+
+
+
+
+    <button type="submit" class="btn bg-orange btn-outline-orange my-2">{{ 'Search'|trans }}</button>
+
                     <tr>
-                    <th>{{ 'Error'|trans }}</th>
-                    <th>{{ 'Device Type'|trans }}</th>
+                    <th>
+                        <div class="btn-group dropend filterDropdown w-100">
+                        <button id="dropdownErrorCategory" class="btn btn-secondary dropdown-toggle d-flex flex-nowrap justify-content-between align-items-center filterDropbtn my-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <h6 class="mt-2">{{ 'Errors'|trans }}</h6>
+                        </button>
+                        {{ form_row(form.error_category) }}
+                        </div>
+                    </th>
+                    <th>
+                        <div class="btn-group dropend filterDropdown w-100">
+                        <button id="dropdownErrorCategory" class="btn btn-secondary dropdown-toggle d-flex flex-nowrap justify-content-between align-items-center filterDropbtn my-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <h6 class="mt-2">{{ 'Devices'|trans }}</h6>
+                        </button>
+                        {{ form_row(form.sn_category) }}
+                        </div>
+                    </th>
                     <th>{{ 'Serial Number'|trans }}</th>
-                    <th>{{ 'Version'|trans }}</th>
-                    <th>{{ 'Date'|trans }}</th>
+                    <th>
+                        <div class="btn-group dropend filterDropdown w-100">
+                        <button id="dropdownErrorCategory" class="btn btn-secondary dropdown-toggle d-flex flex-nowrap justify-content-between align-items-center filterDropbtn my-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <h6 class="mt-2">{{ 'Versions'|trans }}</h6>
+                        </button>
+                        {{ form_row(form.version) }}
+                        </div>
+                    </th>
+                    <th>
+                        <div class="d-flex justify-content-between w-100 my-2">
+                            <select name="date" id="date">
+                            <option value="" selected disabled>Day</option>
+                            {% for day in days %}
+                                <option value="{{day}}">{{day}}</option>
+                            {% endfor %}
+                            </select>
+                            <select name="month" id="month">
+                            <option value="" selected disabled>Month</option>
+                            {% for key, month in months %}
+                                <option value="{{key}}">{{month}}</option>
+                            {% endfor %}
+                            </select>
+                            <select name="year" id="year">
+                            <option value="" selected disabled>Year</option>
+                            {% for key, year in years %}
+                                <option value="{{key}}">{{year}}</option>
+                            {% endfor %}
+                            </select>
+                        </div>
+                    </th>
+                    {{ form_end(form) }}
+
                     </tr>
                     </thead>
                     <tbody>

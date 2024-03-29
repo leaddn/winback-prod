@@ -83,6 +83,17 @@
         </div>
           
             {% endif %}
+        {% elseif is_granted("ROLE_LOGISTIC")%}
+            <div class="col card card-index m-2" style="min-width: 15em;">
+                <a class="h-100" href="{{path('device')}}">
+                    <div class="card-body h-100 d-flex flex-column align-items-center justify-content-evenly">
+                    <i class="fa-solid fa-laptop-medical" style="font-size: 3em;"></i>
+                    <h6 class="text-nowrap text-uppercase fw-light">{{ 'Devices'|trans }}</h6>
+                    <span>{{ 'Manage the devices available on the server, edit an existing device.'|trans }}</span>
+                    </div>
+                </a>   
+            </div>
+            
         {% elseif is_granted("ROLE_CLIENT")%}
 
 

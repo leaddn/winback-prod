@@ -10,17 +10,19 @@
         #}
         <li>
             <a href="#dashboard" class="nav-link">
-            <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"></use></svg>
             Dashboard
             </a>
         </li>
         <li>
             <a href="#table" class="nav-link">
-            <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
             Table
             </a>
         </li>
+        <li>
         <hr class="w-50">
+        </li>
+        
+        {#
         <li class="nav-link">
             <div class="form-check">
             <input class="form-check-input" type="radio" name="exampleRadios" id="byWeek" value="option1" checked>
@@ -35,6 +37,7 @@
             </label>
             </div>
         </li>
+        #}
         <li>
         {% include "protocol/_filter.html.twig" %}
         </li>

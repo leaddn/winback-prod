@@ -1,17 +1,30 @@
 <div class="container row">
 <hr class="w-100 mt-5">
 <span id="errorDashboard" class="d-flex text-nowrap justify-content-left align-items-center w-100 mb-5"><svg width="7" height="15" viewBox="0 0 7 15" fill="none"><path d="M-0.000264168 0H3.14905L6.81055 7.49834L3.14905 15H-0.000264168L3.66123 7.49834L-0.000264168 0Z" fill="white"></path></svg><h2 class="text-uppercase ms-1 mb-0" style="font-size: 21px;">Dashboard</h2></span>
-<div class="row">
+<div class="col">
 <h3>Total Errors</h3>
 <div style="height: 30em;">{{ render_chart(errorChart) }}</div>
 </div>
-<div class="row">
-    {% for key, item in errorChartArray %}
+<div class="col">
     
-    <div class="col my-5" style="">
-    <h3>{{key}}</h3>
-    {{ render_chart(item) }}
-    </div>
-    {% endfor %}
+        <div id="carouselExample" class="carousel slide col">
+            <div class="carousel-inner">
+                {% for key, item in errorChartArray %}
+                <div class="carousel-item {{(key == 'BACK4')? 'active':''}}">
+                        <div class="d-flex justify-content-between align-items-center my-5">
+                            <button class="carousel-control-next btn btn-outline-orange" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </button>
+                            <h4 class="m-0">{{key}}</h4>
+                            <button class="carousel-control-next btn btn-outline-orange" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </button>
+                        </div>
+                    {{ render_chart(item) }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    
 </div>
 </div>

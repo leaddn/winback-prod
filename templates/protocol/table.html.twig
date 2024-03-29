@@ -4,14 +4,16 @@
         <div class="carousel-inner">    
             {% for date, proto in protocols %}
             <div class="carousel-item {{(date == lastDayName)? 'active':''}}">
-                <div class="d-flex justify-content-between align-items-center my-2">
-                    <button class="carousel-control-next btn btn-outline-orange" type="button" data-bs-target="#carouselProtocol" data-bs-slide="prev">
-                        <i class="fa-solid fa-angle-left"></i>
-                    </button>
-                    <h4 class="m-0">{{date}}</h4>
-                    <button class="carousel-control-next btn btn-outline-orange" type="button" data-bs-target="#carouselProtocol" data-bs-slide="next">
-                        <i class="fa-solid fa-angle-right"></i>
-                    </button>
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="d-flex justify-content-between align-items-center my-2 w-50">
+                        <button class="carousel-control-next btn btn-outline-orange" type="button" data-bs-target="#carouselProtocol" data-bs-slide="prev">
+                            <i class="fa-solid fa-angle-left"></i>
+                        </button>
+                        <h4 class="m-0">{{date}}</h4>
+                        <button class="carousel-control-next btn btn-outline-orange" type="button" data-bs-target="#carouselProtocol" data-bs-slide="next">
+                            <i class="fa-solid fa-angle-right"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="row d-flex justify-content-left align-items-center">
                     <div class="col">
@@ -36,7 +38,7 @@
                                                 <div class="row border">
                                                     
                                                     <div class="col-1 mb-0 py-1 d-flex align-items-center justify-content-center">
-                                                    <span>Way {{way_key}}</span>
+                                                    <span class='text-nowrap'>Way {{way_key}}</span>
                                                     </div>
                                                     {% for param in mode %}
                                                         <div class="col">

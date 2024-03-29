@@ -17,16 +17,28 @@
                 </div>
             </div>
         </div>
-        <div class="row my-1 d-flex justify-content-between">
+        <div class="row my-5 d-flex justify-content-between">
             <div class="col d-flex flex-column justify-content-between h-100" style="max-width: 50em;">
                 <h6>Mode usage (%)</h6>
-                <div id="modeDay" style="width: 40em; display: none;">{{ render_chart(modeChart, {'class': 'w-100'}) }}</div>
-                {{ render_chart(modeChartWeek, {'id': 'modeWeek'}) }}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="exampleRadios" id="byWeek" value="option1" checked>
+                    <label class="form-check-label" for="modeWeek">
+                        Week
+                    </label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="radio" name="exampleRadios" id="byDay" value="option2">
+                    <label class="form-check-label" for="modeDay">
+                        Day
+                    </label>
+                </div>
+                <div id="modeDay" style="width: 30em; display: none;">{{ render_chart(modeChart, {'class': 'w-100'}) }}</div>
+                <div id="modeWeek" style="width: 30em;">{{ render_chart(modeChartWeek, {'class': 'w-100'}) }}</div>
             </div>
             <div class="col d-flex flex-column justify-content-between h-100" style="max-width: 50em;">
                 <h6>Accessories usage (%)</h6>
-                <div style="display: none;">{{ render_chart(accChart, {'id': 'accDay'}) }}</div>
-                {{render_chart(accChartWeek, {'id': 'accWeek'})}}
+                <div id="accDay" style="width: 30em; display: none;">{{ render_chart(accChart, {'class': 'w-100'}) }}</div>
+                <div id="accWeek" style="width: 30em;">{{render_chart(accChartWeek, {'class': 'w-100'})}}</div>
             </div>
         </div>
     </div>
