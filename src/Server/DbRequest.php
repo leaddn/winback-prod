@@ -283,7 +283,6 @@ class DbRequest {
     */
     function setDeviceInfo(string $sn, string $vers, int $devType, string $ipAddr, string $logFile)
     {
-        $utils = new Utils();
         $whereCond = SN." = '".$sn."'";
         /*
         $geography = $this->getLocationInfoByIp($ipAddr); //get location by ip

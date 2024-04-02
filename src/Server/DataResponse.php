@@ -242,13 +242,13 @@ class DataResponse extends Utils
      * @return string $logFile
      */
 	function writeCommandLog(string $sn, string $deviceType, string $logTxt){
-        $path = $_ENV['LOG_PATH']."command/".deviceType[$deviceType];
+        $path = $_ENV['LOG_PATH']."command/".DEVICE_TYPE_ARRAY[$deviceType];
 		if (!file_exists($path)) {
 			mkdir($path, 0777, true);
 		}
 		$logFile = trim($sn).".txt";
         if (file_exists($path.$logFile) && filesize($path.$logFile) < 1000000) {
-            $fd = fopen($_ENV['LOG_PATH']."command/".deviceType[$deviceType].$logFile, "a+");
+            $fd = fopen($_ENV['LOG_PATH']."command/".DEVICE_TYPE_ARRAY[$deviceType].$logFile, "a+");
             if($fd){
                 fwrite($fd, $logTxt);
                 fclose($fd);
@@ -258,7 +258,7 @@ class DataResponse extends Utils
             }
         }
         else {
-            $fd = fopen($_ENV['LOG_PATH']."command/".deviceType[$deviceType].$logFile, "w");
+            $fd = fopen($_ENV['LOG_PATH']."command/".DEVICE_TYPE_ARRAY[$deviceType].$logFile, "w");
             if($fd){
                 fwrite($fd, $logTxt);
                 fclose($fd);
@@ -270,14 +270,14 @@ class DataResponse extends Utils
 	}
 
     function writeVersionLog(string $sn, string $deviceType, string $inputTxt){
-        $path = $_ENV['LOG_PATH']."version/".deviceType[$deviceType];
+        $path = $_ENV['LOG_PATH']."version/".DEVICE_TYPE_ARRAY[$deviceType];
         $logTxt = "\r\n".date("Y-m-d H:i:s | ").$inputTxt."\r\n";
 		if (!file_exists($path)) {
 			mkdir($path, 0777, true);
 		}
 		$logFile = trim($sn).".txt";
         if (file_exists($path.$logFile) && filesize($path.$logFile) < 1000) {
-            $fd = fopen($_ENV['LOG_PATH']."version/".deviceType[$deviceType].$logFile, "a+");
+            $fd = fopen($_ENV['LOG_PATH']."version/".DEVICE_TYPE_ARRAY[$deviceType].$logFile, "a+");
             if($fd){
                 fwrite($fd, $logTxt);
                 fclose($fd);
@@ -287,7 +287,7 @@ class DataResponse extends Utils
             }
         }
         else {
-            $fd = fopen($_ENV['LOG_PATH']."version/".deviceType[$deviceType].$logFile, "w");
+            $fd = fopen($_ENV['LOG_PATH']."version/".DEVICE_TYPE_ARRAY[$deviceType].$logFile, "w");
             if($fd){
                 fwrite($fd, $logTxt);
                 fclose($fd);
@@ -583,7 +583,7 @@ class DataResponse extends Utils
      */
     function getPointeur($sn, $deviceType)
     {
-        $path = $_ENV['LOG_PATH'].deviceTypeArray[$deviceType].trim($sn).".txt";
+        $path = $_ENV['LOG_PATH'].DEVICE_TYPE_ARRAY[$deviceType].trim($sn).".txt";
         if(file_exists($path)){
             $newPointeur = filesize($path);
             //echo "\r\nPointeur before: ".$newPointeur."\r\n";
@@ -604,7 +604,7 @@ class DataResponse extends Utils
     
     function getPointeur2($sn, $deviceType)
     {
-        $path = $_ENV['LOG_PATH'].deviceTypeArray[$deviceType].trim($sn).".txt";
+        $path = $_ENV['LOG_PATH'].DEVICE_TYPE_ARRAY[$deviceType].trim($sn).".txt";
         if(file_exists($path)){
             $newPointeur = filesize($path);
         }

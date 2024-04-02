@@ -1,6 +1,7 @@
 <?php
 namespace App\Server;
 
+use App\Repository\DeviceFamilyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Server\CommandDetect;
 use App\Server\DataResponse;
@@ -140,7 +141,7 @@ class TCPServer443 extends Application
 		return $resultArray;
 	}
 
-	function runServer(LoggerInterface $logger)
+	function runServer(LoggerInterface $logger, DeviceFamilyRepository $deviceFamilyRepository)
 	{
 		/**
 		 * @var array $resultArray
@@ -323,7 +324,7 @@ class TCPServer443 extends Application
 						{ 
 							$deviceKey = array_search($read_sock, $clients);			
 							$clientsInfo[$deviceKey][2] = hrtime(true)+$this->timeOut;
-							if(substr($data, 0, 1) == 'W' && $data[3] == 0 && array_key_exists(hexdec($data[3].$data[4]), deviceType)){ // Verify that data comes from a device (all devices start with W)
+							if(substr($data, 0, 1) == 'W' && $data[3] == 0 && array_key_exists(hexdec($data[3].$data[4]), DEVICE_TYPE_ARRAY)){ // Verify that data comes from a device (all devices start with W)
 								//echo ("\r\nData received: " . $data . "\r\n");
 								$time_start_socket = microtime(true);
 								$task = new CommandDetect();
@@ -335,7 +336,7 @@ class TCPServer443 extends Application
 
 								//$deviceInfo = $clientsInfo[$deviceKey][7];
 
-								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $logger);
+								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $deviceFamilyRepository);
 
 								if ($responseArray != False) {
 									// récupérer deviceInfo

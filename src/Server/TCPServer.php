@@ -1,6 +1,7 @@
 <?php
 namespace App\Server;
 
+use App\Repository\DeviceFamilyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Server\CommandDetect;
 use App\Server\DataResponse;
@@ -103,14 +104,15 @@ class TCPServer extends Application
 	}
 	/**
 	 * Create Socket and connect to server
-	 * @return $resultArray array|bool - array of sockets ? [0] => Array ([0]=> Socket Object()), [1]=> Socket Object()
+	 * @param string $port
+	 * @return array|bool $resultArray - array of sockets ? [0] => Array ([0]=> Socket Object()), [1]=> Socket Object()
 	 */
-	function createServer()
+	function createServer($port)
 	{
 		set_time_limit(0);
 		ob_implicit_flush();
 
-		$msg = str_repeat("\r\n".str_repeat("#", 30)."\r\n", 3)."\r\n==========   SERVER STARTED {$_ENV['ADDRESS']}:{$_ENV['PORT']}   ==========\r\n".str_repeat("\r\n".str_repeat("#", 30)."\r\n", 3);
+		$msg = str_repeat("\r\n".str_repeat("#", 30)."\r\n", 3)."\r\n==========   SERVER STARTED {$_ENV['ADDRESS']}:{$port}   ==========\r\n".str_repeat("\r\n".str_repeat("#", 30)."\r\n", 3);
 		echo 'User IP Address - '.gethostbyname("winback-assist.com"); 
 		//print_r($_SERVER);
 		echo($msg);
@@ -120,7 +122,7 @@ class TCPServer extends Application
 		// set the option to reuse the port
 		socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1);
 		// bind the socket to the address defined in config on port
-		if (socket_bind($sock, gethostbyname($_ENV['ADDRESS']), $_ENV['PORT']) === false) {
+		if (socket_bind($sock, gethostbyname($_ENV['ADDRESS']), $port) === false) {
 			echo "socket_bind() a échoué : raison : " . socket_strerror(socket_last_error($sock)) . "\n";
 			return false;
 		}
@@ -136,7 +138,7 @@ class TCPServer extends Application
 		return $resultArray;
 	}
 
-	function runServer(LoggerInterface $logger)
+	function runServer(LoggerInterface $logger, DeviceFamilyRepository $deviceFamilyRepository, $port)
 	{
 		/**
 		 * @var array $resultArray
@@ -198,13 +200,12 @@ class TCPServer extends Application
 		*/
 
 		/**
-		 * @clientsInfo : array of sn connected as key and array of info linked to this sn as values (ex: [WIN0D_TEST_61706    ] => Array), the subarray is a key-index paired with each info (ex: [1] => 'ip address : port')
+		 * @var array $clientsInfo
+		 * array of sn connected as key and array of info linked to this sn as values (ex: [WIN0D_TEST_61706    ] => Array), the subarray is a key-index paired with each info (ex: [1] => 'ip address : port')
 		 */
-		//$output = new ConsoleOutput();
 		$this->preflight();
 		$request = new DbRequest();
-		$dataResponse = new DataResponse();
-		$resultArray = $this->createServer();
+		$resultArray = $this->createServer($port);
 		$clients = $resultArray[0];
 		$sock = $resultArray[1];
 		$clientsInfo = array(array("sn unknown","ip unknown",hrtime(true)));
@@ -217,7 +218,6 @@ class TCPServer extends Application
 			// if there are no clients with data, go to next iteration
 			reset($clients);
 			reset($clientsInfo);
-			//TODO Close socket automatically after too much time without receiving data
 			foreach ($clientsInfo as $i=>$client)
 			{
 				if ($i > 0) {
@@ -319,7 +319,7 @@ class TCPServer extends Application
 						{ 
 							$deviceKey = array_search($read_sock, $clients);			
 							$clientsInfo[$deviceKey][2] = hrtime(true)+$this->timeOut;
-							if(substr($data, 0, 1) == 'W' && $data[3] == 0 && array_key_exists(hexdec($data[3].$data[4]), deviceType)){ // Verify that data comes from a device (all devices start with W)
+							if(substr($data, 0, 1) == 'W' && $data[3] == 0 && array_key_exists(hexdec($data[3].$data[4]), DEVICE_TYPE_ARRAY)){ // Verify that data comes from a device (all devices start with W)
 								//echo ("\r\nData received: " . $data . "\r\n");
 								$time_start_socket = microtime(true);
 								$task = new CommandDetect();
@@ -331,7 +331,7 @@ class TCPServer extends Application
 
 								//$deviceInfo = $clientsInfo[$deviceKey][7];
 
-								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $logger);
+								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $deviceFamilyRepository);
 
 								if ($responseArray != False) {
 									// récupérer deviceInfo

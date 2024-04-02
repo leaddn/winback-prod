@@ -1,6 +1,7 @@
 <?php
 namespace App\Command;
 
+use App\Repository\DeviceFamilyRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -10,6 +11,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class TCPCommand extends Command
@@ -17,9 +19,11 @@ class TCPCommand extends Command
     protected static $defaultName = 'app:tcpserver';
     
     private $logger;
+    private $deviceFamilyRepository;
 
-    public function __construct(LoggerInterface $logger) {                
-        $this->logger = $logger; 
+    public function __construct(LoggerInterface $logger, DeviceFamilyRepository $deviceFamilyRepository) {                
+        $this->logger = $logger;
+        $this->deviceFamilyRepository = $deviceFamilyRepository;
         parent::__construct();               
     }
     
@@ -27,17 +31,30 @@ class TCPCommand extends Command
     {
         $this
             ->setDescription('Start TCP server')
-            ->setHelp('This command allows you to run a web socket to connect with winback devices.');
+            ->setHelp("This command allows you to run a web socket to connect with winback devices. \r\nCreates and runs a TCP server on the specified port and address.");
+            //->addArgument('port', InputArgument::REQUIRED, 'Server Port');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        
+        $helper = $this->getHelper('question');
+        #portQuestion
+        $portQuestion = new ChoiceQuestion(
+            'Please select server port ',
+            [$_ENV["PORT"], $_ENV["SERVER_SECURE_PORT"]],
+            0
+        );
+        $portQuestion->setErrorMessage('Port %s is invalid.');
+        $port = $helper->ask($input, $output, $portQuestion);
+        $output->writeln('You have just selected: '.$port);
+        
         $server = new TCPServer();
         $pathToPython = "./src/Server/TCPServer.php";
         //$server = new TCPServer(['php', $pathToPython]);
         $dispatcher = new EventDispatcher();
         $server->setDispatcher($dispatcher);
-        $server->runServer($this->logger);
+        $server->runServer($this->logger, $this->deviceFamilyRepository, $port);
 
         $dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event): void {
             $output = $event->getOutput();

@@ -19,11 +19,11 @@ class UtilsTest extends TestCase
 
         $utils = new Utils();
         /* GET FILE CONTENT */
-        $rshock_soft_list = array_diff(scandir($_ENV['PACK_PATH'].deviceTypeArray[10]), array('..', '.'));
-        $cryo_soft_list = array_diff(scandir($_ENV['PACK_PATH'].deviceTypeArray[11]), array('..', '.'));
-        $back4_soft_list = array_diff(scandir($_ENV['PACK_PATH'].deviceTypeArray[12]), array('..', '.'));
-        $bio_soft_list = array_diff(scandir($_ENV['PACK_PATH'].deviceTypeArray[13]), array('..', '.'));
-        $back3_soft_list = array_diff(scandir($_ENV['PACK_PATH'].deviceTypeArray[10]), array('..', '.'));
+        $rshock_soft_list = array_diff(scandir($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[10]), array('..', '.'));
+        $cryo_soft_list = array_diff(scandir($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[11]), array('..', '.'));
+        $back4_soft_list = array_diff(scandir($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[12]), array('..', '.'));
+        $bio_soft_list = array_diff(scandir($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[13]), array('..', '.'));
+        $back3_soft_list = array_diff(scandir($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[10]), array('..', '.'));
 
         foreach ($back3_soft_list as $soft) {
             $this->assertSame(true, $utils->getFileContentTest('14', $soft));
@@ -43,8 +43,8 @@ class UtilsTest extends TestCase
         }
         
         /*
-        foreach (deviceTypeArray as $deviceType) {
-            $soft_list = array_diff(scandir(PACK_PATH.deviceTypeArray[$deviceType]), array('..', '.'));
+        foreach (DEVICE_TYPE_ARRAY as $deviceType) {
+            $soft_list = array_diff(scandir(PACK_PATH.DEVICE_TYPE_ARRAY[$deviceType]), array('..', '.'));
             foreach ($soft_list as $soft) {
                 $this->assertSame(true, $utils->getFileContentCheck($deviceType, $soft));
             }

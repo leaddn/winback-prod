@@ -40,8 +40,8 @@ class Utils {
     function getFileContent(string $deviceType, string $fileName) : string|bool
     {
         if (file_exists($_ENV['PACK_PATH'])) { # check that directory exists and is accessible
-            if (file_exists($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName)) {
-                if ($content = file_get_contents($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName)) {
+            if (file_exists($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName)) {
+                if ($content = file_get_contents($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName)) {
                     return $content;
                 } else {
                     echo "\r\n{$fileName} is too big. Content cannot be get.\r\n";
@@ -52,8 +52,8 @@ class Utils {
                 $boardType = $aValue[2]; //TODO to be used in the future in file_get_contents
                 $lastVersUp = $this->checkLastVersion($deviceType, $boardType);
                 $actualFile = $lastVersUp["name"];
-                if (file_exists($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $actualFile)) {
-                    $content = file_get_contents($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $actualFile);
+                if (file_exists($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $actualFile)) {
+                    $content = file_get_contents($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $actualFile);
                     if (!$content) {
                         echo "\r\n{$actualFile} is too big. Content cannot be get.\r\n";
                         return false;
@@ -73,16 +73,16 @@ class Utils {
     function getFileSize(string $deviceType, string $fileName) : string|bool
     {
         if (file_exists($_ENV['PACK_PATH'])) { # check that directory exists and is accessible
-            if (file_exists($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName)) {
-                $size = filesize($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName);
+            if (file_exists($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName)) {
+                $size = filesize($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName);
                 return $size;
             } else {
                 $aValue = explode('_', $fileName);
                 $boardType = $aValue[2]; //TODO to be used in the future in file_get_contents
                 $lastVersUp = $this->checkLastVersion($deviceType, $boardType);
                 $actualFile = $lastVersUp["name"];
-                if (file_exists($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $actualFile)) {
-                    $size = filesize($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $actualFile);
+                if (file_exists($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $actualFile)) {
+                    $size = filesize($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $actualFile);
                     return $size;
                 }
                 echo "\r\n{$actualFile} doesn't exist, please check again.\r\n";
@@ -98,8 +98,8 @@ class Utils {
     function getFileContentTest(string $deviceType, string $fileName) : string|bool
     {
         if (file_exists($_ENV['PACK_PATH'])) { # check that directory exists and is accessible
-            if (file_exists($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName)) {
-                if ($content = file_get_contents($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName)) {
+            if (file_exists($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName)) {
+                if ($content = file_get_contents($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName)) {
                     return true;
                 } else {
                     echo "\r\n{$fileName} is too big. Content cannot be get.\r\n";
@@ -107,7 +107,7 @@ class Utils {
                 }
 
                 /*
-                $content = file_get_contents($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName);
+                $content = file_get_contents($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName);
                 if ($content) {
                     return $content;
                 } else {
@@ -120,8 +120,8 @@ class Utils {
                 $boardType = $aValue[2]; //TODO to be used in the future in file_get_contents
                 $lastVersUp = $this->checkLastVersion($deviceType, $boardType);
                 $actualFile = $lastVersUp["name"];
-                if (file_exists($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $actualFile)) {
-                    $content = file_get_contents($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $actualFile);
+                if (file_exists($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $actualFile)) {
+                    $content = file_get_contents($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $actualFile);
                     if (!$content) {
                         echo "\r\nContent cannot be get.\r\n";
                         return false;
@@ -140,9 +140,9 @@ class Utils {
     /*
     function getFileContentTest(string $deviceType, string $fileName) : bool
     {
-		if(file_exists($_ENV['PACK_PATH'].deviceTypeArray[$deviceType].$fileName)){
+		if(file_exists($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[$deviceType].$fileName)){
             //echo("\r\n ".$fileName . " file exists !\r\n");
-            $content = file_get_contents($_ENV['PACK_PATH'].deviceTypeArray[$deviceType].$fileName);
+            $content = file_get_contents($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[$deviceType].$fileName);
             if (!$content) {
                 //throw new Exception('Content cannot be get.');
                 echo "\r\nContent cannot be get.\r\n";
@@ -158,8 +158,8 @@ class Utils {
             $boardType = $aValue[2]; //TODO to be used in the future in file_get_contents
             $lastVersUp = $this->checkLastVersion($deviceType, $boardType);
 			$actualFile = $lastVersUp["name"];
-            if(file_exists($_ENV['PACK_PATH'].deviceTypeArray[$deviceType].$actualFile)){
-                $content = file_get_contents($_ENV['PACK_PATH'].deviceTypeArray[$deviceType].$actualFile);
+            if(file_exists($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[$deviceType].$actualFile)){
+                $content = file_get_contents($_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[$deviceType].$actualFile);
                 if (!$content) {
                     echo "\r\nContent cannot be get.\r\n";
                     return false;

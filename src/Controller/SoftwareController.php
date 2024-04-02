@@ -103,7 +103,7 @@ class SoftwareController extends AbstractController
     public function addDirectorySoftware(DbRequest $request)
     {
         // for each device type in device type array
-        foreach (deviceType as $key => $deviceType) {
+        foreach (DEVICE_TYPE_ARRAY as $key => $deviceType) {
             if (file_exists($_ENV['REL_PACK_PATH'].$deviceType)) {
                 $arrayVersion[$deviceType] = array_diff(scandir($_ENV['REL_PACK_PATH'].$deviceType), array('.'));
                 array_shift($arrayVersion[$deviceType]);
@@ -113,7 +113,7 @@ class SoftwareController extends AbstractController
                     if (str_ends_with($file, ".bin")) {
                         $fileArray = explode("v", $file);
                         $version = substr($fileArray[1], -11, 7);
-                        $deviceTypeId = $request->getDeviceType(deviceId[$deviceType], DEVICE_TYPE_ID);
+                        $deviceTypeId = $request->getDeviceType(array_search($deviceType, DEVICE_TYPE_ARRAY), DEVICE_TYPE_ID);
                         $this->initSoftwareInDB($name=$file, $devType=$deviceTypeId, $version, $date=date("Y-m-d | H:i:s"), $request);
                     }
                 }

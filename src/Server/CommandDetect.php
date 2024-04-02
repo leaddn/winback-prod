@@ -1,8 +1,10 @@
 <?php
 namespace App\Server;
 
+use App\Repository\DeviceFamilyRepository;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\Persistence\ManagerRegistry;
 
 use function PHPUnit\Framework\throwException;
 
@@ -78,11 +80,11 @@ class CommandDetect extends AbstractController {
 	 * @return string $logFile
 	 */
 	public function writeLog(string $sn, string $deviceType){
-        if (!file_exists($_ENV['LOG_PATH'].deviceTypeArray[$deviceType])) {
-            mkdir($_ENV['LOG_PATH'].deviceTypeArray[$deviceType], 0777, true);
+        if (!file_exists($_ENV['LOG_PATH'].DEVICE_TYPE_ARRAY[$deviceType])) {
+            mkdir($_ENV['LOG_PATH'].DEVICE_TYPE_ARRAY[$deviceType], 0777, true);
         }
         $logFile = trim($sn).".txt";
-		$fd = fopen($_ENV['LOG_PATH'].deviceTypeArray[$deviceType].$logFile, "a+");
+		$fd = fopen($_ENV['LOG_PATH'].DEVICE_TYPE_ARRAY[$deviceType].$logFile, "a+");
 		if($fd){
 			fwrite($fd, $this->logTxt);
 			fclose($fd);
@@ -163,9 +165,9 @@ class CommandDetect extends AbstractController {
 				$fileName = $lastVersUp["name"];
 			//}
 		}
-		$fileUp = $_ENV['PACK_PATH'].deviceTypeArray[$deviceType].$fileName;
-		if (!file_exists($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType])) {
-			echo "\r\nPath ".$_ENV['PACK_PATH'] . deviceTypeArray[$deviceType]." not present on the server.\r\n";
+		$fileUp = $_ENV['PACK_PATH'].DEVICE_TYPE_ARRAY[$deviceType].$fileName;
+		if (!file_exists($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType])) {
+			echo "\r\nPath ".$_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType]." not present on the server.\r\n";
 		}
 		else
 		{
@@ -411,7 +413,7 @@ class CommandDetect extends AbstractController {
 	 * $this->responseArray[2] = $deviceInfo;
 	 * $this->responseArray[3] = $percentage;
 	 */
-    public function start(string $data, string $ipAddr, array $deviceInfo) : false|array
+    public function start(string $data, string $ipAddr, array $deviceInfo, DeviceFamilyRepository $deviceFamilyRepository) : false|array
 	{
 		$time_start_command = microtime(true);
 
@@ -429,8 +431,9 @@ class CommandDetect extends AbstractController {
 		$deviceConfig = $deviceObj["config"];
 
 	if ($command == 'DE' || $command == 'FE' || $command == 'F9') {
-		$deviceTypeId = deviceTypeId[$deviceType];
-		$deviceTypeName = deviceTypeName[$deviceType];
+		$deviceTypeId2 = deviceTypeId[$deviceType];
+		$deviceTypeId = $deviceFamilyRepository->findOneBy(["numberId" => $deviceType]);
+		$deviceTypeName = substr(DEVICE_TYPE_ARRAY[$deviceType], 0, -1);
 		$logFile = trim($sn).".txt";
 		/** @var array $deviceInfo 
 		 * Info available in database
@@ -438,7 +441,7 @@ class CommandDetect extends AbstractController {
 		 * [FORCED_UPDATE] : forced
 		*/
 		$request->initDeviceInSN($sn, $deviceTypeName);
-		$deviceInfo = $request->setDeviceInfo($sn, $version, $deviceTypeId, $ipAddr, $logFile);
+		$deviceInfo = $request->setDeviceInfo($sn, $version, $deviceTypeId->getId(), $ipAddr, $logFile);
 		$request->setDeviceToServer($sn);
 		$this->responseArray[2] = $deviceInfo;
 	}
@@ -456,7 +459,7 @@ class CommandDetect extends AbstractController {
 				$logTxt = "Version: ".$deviceInfo[DEVICE_VERSION]." Upload version: ".$deviceInfo[VERSION_UPLOAD]." Address: ".$deviceInfo[IP_ADDR]." Country: ".$deviceInfo[COUNTRY];
 				$dataResponse->writeVersionLog($sn, $deviceType, $logTxt);
 				//$fileContent = $dataResponse->setFileContent($dataResponse->getFileContent($deviceType, $fileName));
-				$path = $_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName;
+				$path = $_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName;
 				
 				$fileContent = $dataResponse->getChunk($path, FW_OCTETS);
 				$dataResponse->setHeader($command, $this->reqId);
@@ -547,7 +550,7 @@ class CommandDetect extends AbstractController {
 					$configId = $request->getConfigId($sn, CONFIG_ID);
 					if ($configId == 1) {
 						$commandId = 2; // indication sous-commande
-						if ($deviceType==12 and ($this->compareVersion("3.30", $deviceInfo[DEVICE_VERSION]) == true or $deviceInfo[DEVICE_VERSION] == "0.45" or $deviceInfo[DEVICE_VERSION] == "0.47" or $deviceInfo[DEVICE_VERSION] == "0.48" or $deviceInfo[DEVICE_VERSION] == "0.49")) {
+						if ($deviceType==12 and ($this->compareVersion("3.30", $deviceInfo[DEVICE_VERSION]) == true or $deviceInfo[DEVICE_VERSION] == "0.45" or $deviceInfo[DEVICE_VERSION] == "0.47" or $deviceInfo[DEVICE_VERSION] == "0.48" or $deviceInfo[DEVICE_VERSION] == "0.49" or $deviceInfo[DEVICE_VERSION] == "0.62")) {
 							$configUp = chr(intval($request->getConfigUp($sn))).chr(intval($request->getConfigUp($sn))>>8);
 						}
 						elseif ($deviceType==14 and ($this->compareVersion("3.16", $deviceInfo[DEVICE_VERSION]) == true or $deviceInfo[DEVICE_VERSION] == "0.1" or $deviceInfo[DEVICE_VERSION] == "0.4"  or $deviceInfo[DEVICE_VERSION] == "0.5")) {
@@ -626,7 +629,7 @@ class CommandDetect extends AbstractController {
 				if ($deviceInfo[IMAGE_ID] != 0) {
 					$commandId = 1;
 					if ($deviceInfo[IMAGE_ID] == 1) {
-						$image_path = "C:\wamp64\www\public\winback\public\Ressource\images\\".deviceTypeArray[$deviceType].trim($sn).$deviceInfo[IMAGE_UP];
+						$image_path = "C:\wamp64\www\public\winback\public\Ressource\images\\".DEVICE_TYPE_ARRAY[$deviceType].trim($sn).$deviceInfo[IMAGE_UP];
 						//$image_path_copy = 
 						$size = filesize($image_path)-$indexToGet;
 						$filesize =  filesize($image_path);
@@ -639,7 +642,7 @@ class CommandDetect extends AbstractController {
 						$sizeCopy = strlen($commandId) + $size;
 						$header = $dataResponse->setHeader($command, $this->reqId, $sizeCopy);
 						$content = $dataResponse->setResponseToByte($commandId, 0);
-						$input = $dataResponse->getImageFile(deviceType[$deviceType], $image_path, $indexToGet, $size);
+						$input = $dataResponse->getImageFile(DEVICE_TYPE_ARRAY[$deviceType], $image_path, $indexToGet, $size);
 						$tempResponse = $header . $content . $input;
 						$response = $dataResponse->getCesarMatrix($tempResponse);
 					}
@@ -671,12 +674,12 @@ class CommandDetect extends AbstractController {
 			case "CC":
 				$subtype = $request->getConfigDown($sn);
 				$dataResponse->setHeader($command, $this->reqId, 0);
-				$response = $dataResponse->getProtocolDirectoryData($this->path, deviceType[$deviceType], $boardType, $subtype);
+				$response = $dataResponse->getProtocolDirectoryData($this->path, DEVICE_TYPE_ARRAY[$deviceType], $boardType, $subtype);
 				for($i=6;$i<strlen($response);$i++)$response[$i]=chr(hexdec(bin2hex($response[$i]))+$this->getserverCesarMatrixTxArray[($i-6)%214]);
 				break;
 			//download protocol
 			case "CB":
-				$directoryPath = $_ENV['PROTO_PATH'] . deviceType[$deviceType] .$this->path;
+				$directoryPath = $_ENV['PROTO_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] .$this->path;
 				$pattern = "/\/" . $deviceConfig . "/";
 				$directoryPath = preg_replace($pattern, "", $directoryPath, 1);
 				if(file_exists($directoryPath)) {
@@ -703,7 +706,7 @@ class CommandDetect extends AbstractController {
 				}
 				//* return index in tcpserver to not send response if index is repeated*//
 				$this->responseArray[0] = $indexToGet;
-				$path = $_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName;
+				$path = $_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName;
 					$filesize =  filesize($path);
 					$percentage = intval(($indexToGet/$filesize)*100);
 					if ($percentage == 0 && $indexToGet == 4096 || $percentage == 99 && ($filesize-$indexToGet) < 4096) {
@@ -741,31 +744,31 @@ class CommandDetect extends AbstractController {
 			case "DA":
 				$dataResponse->setHeader($command, $this->reqId, 9);
 				$response = $dataResponse->getCesarMatrix(
-					$tempResponse = $dataResponse->getPubsData(deviceTypeArray[$deviceType])
+					$tempResponse = $dataResponse->getPubsData(DEVICE_TYPE_ARRAY[$deviceType])
 				);
 				break;
 			//Download PUBS
 		    case "D8":
-				$size = (filesize($_ENV['PUB_PATH'].deviceTypeArray[$deviceType]."PUBS.bin")-$indexToGet);
+				$size = (filesize($_ENV['PUB_PATH'].DEVICE_TYPE_ARRAY[$deviceType]."PUBS.bin")-$indexToGet);
 				if($size>4096)$size=4096;
 				$dataResponse->setHeader($command, $this->reqId, $size);
 				$response = $dataResponse->getCesarMatrix(
-					$tempResponse = $dataResponse->getPubsFile(deviceType[$deviceType], $indexToGet, $size)
+					$tempResponse = $dataResponse->getPubsFile(DEVICE_TYPE_ARRAY[$deviceType], $indexToGet, $size)
 				);
 				break;
 			//Synchro library directory
 			case "CF":
 				$dataResponse->setHeader($command, $this->reqId, 0);
-				$finalResponse = $dataResponse->getSynchroDirectoryData($this->path, deviceType[$deviceType], $boardType);
+				$finalResponse = $dataResponse->getSynchroDirectoryData($this->path, DEVICE_TYPE_ARRAY[$deviceType], $boardType);
 				$response = $dataResponse->getCesarMatrix($finalResponse);		
 				break;
 			//Download library files
 			case "CE":
 				if ($_ENV['APP_ENV'] == 'dev') {
-					$directoryPath = $_ENV['LIB_PATH'] . deviceType[$deviceType] . $boardType.'/'.$this->path;
+					$directoryPath = $_ENV['LIB_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $boardType.'/'.$this->path;
 				}
 				else {
-					$directoryPath = $_ENV['LIB_PATH'] . deviceType[$deviceType] . $this->path;
+					$directoryPath = $_ENV['LIB_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $this->path;
 				}
 				$size=(filesize($directoryPath)-$indexToGet);
 				if($size>4096)$size=4096;
@@ -783,7 +786,7 @@ class CommandDetect extends AbstractController {
 				$fileContent = $dataResponse->getFileContent($deviceType, $fileName);
 				$startOffset = $dataResponse->getIndexForImg($fileContent);
 				/*
-				$fileContent2 = $dataResponse->getChunk($_ENV['PACK_PATH'] . deviceTypeArray[$deviceType] . $fileName, 1024);
+				$fileContent2 = $dataResponse->getChunk($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName, 1024);
 				$sizeContent = $dataResponse->getCRCAutoDetect(FW_OCTETS, $fileContent2);
 				$tempResponse = $dataResponse->autoDetectBody($sizeContent, $fileContent2, $forcedUpdate);
 				*/

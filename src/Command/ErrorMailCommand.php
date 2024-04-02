@@ -2,6 +2,7 @@
 namespace App\Command;
 
 use App\Controller\ErrorController;
+use App\Repository\ErrorRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,9 +15,11 @@ class ErrorMailCommand extends Command
 {
     protected static $defaultName = 'app:errorMail';
     private $mailer;
+    private $errorRepository;
 
-    public function __construct(MailerInterface $mailer) {
-        $this->mailer = $mailer; 
+    public function __construct(MailerInterface $mailer, ErrorRepository $errorRepository) {
+        $this->mailer = $mailer;
+        $this->errorRepository = $errorRepository;
         parent::__construct();               
     }
     
@@ -29,7 +32,7 @@ class ErrorMailCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $server = new ErrorController($this->mailer);
+        $server = new ErrorController($this->mailer, $this->errorRepository);
         $dispatcher = new EventDispatcher();
         //$server->setDispatcher($dispatcher);
         $server->sendMail();
