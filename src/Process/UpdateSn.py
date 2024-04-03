@@ -2,8 +2,6 @@ import mysql.connector
 from mysql.connector import Error
 import pandas as pd
 import gspread as gs
-import os
-from dotenv import load_dotenv
 import sys
 from ConnectDb import create_db_connection
 from GetDate import GetDate

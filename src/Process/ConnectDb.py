@@ -9,10 +9,10 @@ def create_db_connection():
     """CONNECTION
 
     Args:
-        host_name (_type_): _description_
-        user_name (_type_): _description_
-        user_password (_type_): _description_
-        db_name (_type_): _description_
+        host_name (string): mysql host
+        user_name (string): mysql user
+        user_password (string): mysql password
+        db_name (string): name of the database
 
     Returns:
         _type_: _description_

@@ -1,15 +1,8 @@
-import gspread as gs
 import pandas as pd
-
 import re
-from sqlalchemy import create_engine
 import datetime
-
-import mysql.connector
 from mysql.connector import Error
-from ConnectDb import create_db_connection
 import os
-from dotenv import load_dotenv
 
 class GetDate():
     
