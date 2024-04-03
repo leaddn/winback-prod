@@ -8,22 +8,17 @@ use Doctrine\Persistence\ManagerRegistry;
 
 use function PHPUnit\Framework\throwException;
 
+/**
+ * Decrypts commands and data sent by machines, executes actions based on the commands received, formulates the response to be sent back by the server.
+ */
 class CommandDetect extends AbstractController {
 
     /***  Var to set from request  ***/
-    
-    private $command = ""; // str of 2 letters (ex: DE) in 20 & 21 position to get from data received
-    //private $indexToGet; // index of 8 digits to get from data received
     private $reqId; // int of 2 digits (ex: 81) in 22 & 23 position to get from data received
 	private $boardType; // software type (ex: sport, fitness, comfort), 2 by default for the moment
     private $path;
-	
 	private $logTxt = "";
     private $ptLogSave = 0;
-	
-	private $nbDataToSend;
-	private $dataTemp;
-
 	private $config;
 	/**
 	 * Summary of responseArray
@@ -74,7 +69,7 @@ class CommandDetect extends AbstractController {
 		
 	}
 	/**
-	 * Summary of writeLog
+	 * Write log data of device in log file
 	 * @param string $sn
 	 * @param string $deviceType
 	 * @return string $logFile
@@ -94,6 +89,12 @@ class CommandDetect extends AbstractController {
 		}
 	}
 
+	/**
+	 * Compare device version with reference version
+	 * @param string $version
+	 * @param string $version_test
+	 * @return bool
+	 */
 	public function compareVersion($version, $version_test) {
 		$version_split = explode(".", $version);
 		$prefix = intval($version_split[0]);
@@ -104,7 +105,6 @@ class CommandDetect extends AbstractController {
 			$suffix_test = intval($version_split_test[1]);
 		
 			if ($prefix_test > $prefix or ($prefix_test == $prefix and $suffix_test >= $suffix)) {
-				//echo true;
 				return true;
 			}
 		}
@@ -128,6 +128,13 @@ class CommandDetect extends AbstractController {
 		return $forcedUpdate;
 	}
 
+	/**
+	 * Get Filename From Version
+	 * @param string $version
+	 * @param string $deviceType
+	 * @param int $boardType
+	 * @return string
+	 */
 	function getFilenameFromVersion($version, $deviceType, $boardType){
 		$versionData = explode(".",$version,8);
 		$versionString = str_pad($versionData[0], 3 , "0" , STR_PAD_LEFT);

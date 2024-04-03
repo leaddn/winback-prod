@@ -22,6 +22,7 @@ class TCPServer extends Application
 {
 	private $timeOut;
 	/**
+	 * This PHP script creates a TCP server that listens on the specified port for incoming connections, reads data from clients, sends a response, and closes the connections.
 	 * @param array $linkConnection - array of sn connected as key and array of sockets linked to this sn as values (ex: [WIN0D_TEST_61706    ] => Array), the subarray is a key-index paired with each socket (ex: [1] => Socket Object())
 	 * @param array $clients - array of socket object: [0] => Socket Object
 	 * 
@@ -104,7 +105,7 @@ class TCPServer extends Application
 	}
 	/**
 	 * Create Socket and connect to server
-	 * @param string $port
+	 * @param string $port port number to listen on
 	 * @return array|bool $resultArray - array of sockets ? [0] => Array ([0]=> Socket Object()), [1]=> Socket Object()
 	 */
 	function createServer($port)
@@ -138,6 +139,13 @@ class TCPServer extends Application
 		return $resultArray;
 	}
 
+	/**
+	 * runServer
+	 * @param LoggerInterface $logger
+	 * @param DeviceFamilyRepository $deviceFamilyRepository
+	 * @param string $port
+	 * @return never
+	 */
 	function runServer(LoggerInterface $logger, DeviceFamilyRepository $deviceFamilyRepository, $port)
 	{
 		/**
