@@ -9,12 +9,6 @@ from ConnectDb import create_db_connection
 from GetDate import GetDate
 
 class UpdateSn():
-    """
-    def __init__(self, filename, month, pathToJson):
-        self.filename = filename
-        self.month = month
-        self.pathToJson = pathToJson
-    """
     
     def importData(self, filename, month, pathToJson):
         """PRODUCT LIST COPY FILE
@@ -30,6 +24,8 @@ class UpdateSn():
         sh = gc.open(filename)
         ws = sh.worksheet(month)
         df_academy = pd.DataFrame(ws.get_all_records())
+        df_academy = df_academy.rename(columns={"DEVICE NAME": "DEVICE", "SERIAL NO.": "SN"})
+
         df_academy['DEVICE'] = df_academy['DEVICE'].str.upper()
         df_academy['SN'] = df_academy['SN'].str.upper()
         df_academy['COUNTRY'] = df_academy['COUNTRY'].str.upper()
@@ -80,7 +76,7 @@ class UpdateSn():
     def main(self, filename, month, pathToJson, connection):
         products_list = self.importData(filename, month, pathToJson)
         sql = '''
-        INSERT INTO sn (SN, Device, Date, country, subtype) 
+        INSERT INTO sn (Device, SN, Date, country, subtype) 
         VALUES (%s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE  
         Device = VALUES(Device),
@@ -88,8 +84,6 @@ class UpdateSn():
         country = VALUES(country),
         subtype = VALUES(subtype);
         '''
-
-        #connection = create_db_connection(host, admin, pwd, db)
         self.execute_list_query(connection, sql, products_list)
 
 if __name__ == "__main__":

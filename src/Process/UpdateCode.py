@@ -19,7 +19,6 @@ class UpdateCode():
         df = pd.read_excel(filename)
         sub_df = df[["ID produit enregistré", "ID compte"]]
         products_list = sub_df.values.tolist()
-        #print(products_list[:10])
         return products_list
     
     def execute_list_query(self, connection, sql, val):
