@@ -10,6 +10,7 @@ Before running the application, follow these steps:
 - import the database in your database service
 - run `composer install` to install the dependencies
 - the Ressource folder is a sensitive data so it is not present by default. If you have the Ressource archive on your device, please export it in the public directory.
+- Update the .env files accordingly to your environment variables
 
 ## How to use:
 
