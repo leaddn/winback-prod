@@ -16,7 +16,9 @@ class UpdateSn extends Command
      protected static $defaultName = 'app:updateSn';
     protected function configure()
     {
-        //...
+        $this
+        ->setDescription('Update and insert new SN in database')
+        ->setHelp("This command allows you to insert new SN in database.\r\nTo add new file, share the file with user 'academy@academy-369611.iam.gserviceaccount.com' and append file to fileQuestion.");
     ;
     }
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -26,9 +28,8 @@ class UpdateSn extends Command
 
         $helper = $this->getHelper('question');
         #fileQuestion
-        //$fileQuestion = new Question('Please enter filename: ', 'PRODUCT_SELLING_2024');
         $fileQuestion = new ChoiceQuestion('Please enter filename: ', 
-        ['2024 PRODUCT SELLING 2024_EDITED', 'PRODUCT_SELLING_2024'],
+        ['2024 PRODUCT SELLING 2024_EDITED'],
         0);
         $filename = $helper->ask($input, $output, $fileQuestion);
         $output->writeln('You have just selected: '.$filename);
@@ -36,8 +37,6 @@ class UpdateSn extends Command
         #monthQuestion
         $monthQuestion = new ChoiceQuestion(
             'Please select month ',
-            //['JAN'=>1, 'FEB'=>2, 'MAR'=>3, 'APR'=>4, 'MAY'=>5, 'JUN'=>6, 'JUL'=>7, 'AUG'=>8, 'SEP'=>9, 'OCT'=>10, 'NOV'=>11, 'DEC'=>12],
-            //[1=>'JAN', 2=>'FEB', 3=>'MAR', 4=>'APR', 5=>'MAY', 6=>'JUN', 7=>'JUL', 8=>'AUG', 9=>'SEP', 10=>'OCT', 11=>'NOV', 12=>'DEC'],
             [1=>'1', 2=>'2', 3=>'3', 4=>'4', 5=>'5', 6=>'6', 7=>'7', 8=>'8', 9=>'9', 10=>'10', 11=>'11', 12=>'12'],
             0
         );

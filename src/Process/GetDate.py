@@ -43,12 +43,12 @@ class GetDate():
         '''
         whereCond = "`SN` = '"+db_table+"'"
         req = self.insertDate(date, whereCond)
-        print(req)
+        #print(req)
         cursor = connection.cursor()
         try:
             cursor.execute(req)
             connection.commit()
-            print("Query successful")
+            #print("Query successful")
         except Error as err:
             print(f"Error: '{err}'")
 
