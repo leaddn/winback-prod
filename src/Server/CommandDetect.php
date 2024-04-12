@@ -283,17 +283,22 @@ class CommandDetect extends AbstractController {
 					//throw new \Exception("hello");
 					if (strlen($data)<221) {
 						echo ($data);
+						echo ("\r\n".strlen($data)."\r\n");
 						//exit;
-						/*
-						for($i=14; $i<(14+206); $i++){
+
+					}
+					$j = 28; // serial number + command
+					
+					if ($command=="DD") {
+						for($i=$j; $i<(strlen($data)); $i++){
 							$dataTemp = hexdec(bin2hex($data[$i])); //TODO string offset
 							if($dataTemp === 127)
 							{
-								$dataTemp = 92 - 35 - $this->getserverCesarMatrixRxArray[($i-14)];
+								$dataTemp = 92 - 35 - $this->getserverCesarMatrixRxArray[($i-$j)];
 							}
 							else 
 							{
-								$dataTemp = ((hexdec(bin2hex($data[$i]))-35) - $this->getserverCesarMatrixRxArray[($i-14)]); // TODO string offset
+								$dataTemp = ((hexdec(bin2hex($data[$i]))-35) - $this->getserverCesarMatrixRxArray[($i-$j)]); // TODO string offset
 							}
 							if($dataTemp < 0)
 							{
@@ -304,27 +309,29 @@ class CommandDetect extends AbstractController {
 								$data[$i] = chr($dataTemp+35);
 							}
 						}
-						*/
 					}
-					for($i=28; $i<(28+206); $i++){
-						$dataTemp = hexdec(bin2hex($data[$i])); //TODO string offset
-						if($dataTemp === 127)
-						{
-							$dataTemp = 92 - 35 - $this->getserverCesarMatrixRxArray[($i-28)];
-						}
-						else 
-						{
-							$dataTemp = ((hexdec(bin2hex($data[$i]))-35) - $this->getserverCesarMatrixRxArray[($i-28)]); // TODO string offset
-						}
-						if($dataTemp < 0)
-						{
-							$data[$i] = chr($dataTemp+127);
-						}
-						else 
-						{
-							$data[$i] = chr($dataTemp+35);
+					else {
+						for($i=$j; $i<(206+$j); $i++){
+							$dataTemp = hexdec(bin2hex($data[$i])); //TODO string offset
+							if($dataTemp === 127)
+							{
+								$dataTemp = 92 - 35 - $this->getserverCesarMatrixRxArray[($i-$j)];
+							}
+							else 
+							{
+								$dataTemp = ((hexdec(bin2hex($data[$i]))-35) - $this->getserverCesarMatrixRxArray[($i-$j)]); // TODO string offset
+							}
+							if($dataTemp < 0)
+							{
+								$data[$i] = chr($dataTemp+127);
+							}
+							else 
+							{
+								$data[$i] = chr($dataTemp+35);
+							}
 						}
 					}
+
 				}
 				// Define BoardType
 				$boardType = $this->getConfig($command, $data);
