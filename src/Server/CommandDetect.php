@@ -219,7 +219,8 @@ class CommandDetect extends AbstractController {
 		}
 		elseif ($command == 'DC' || $command == 'CD') {
 			$indexToGet = hexdec(substr($data, 36, 8));
-			echo "Index to get: " . $indexToGet;
+			//echo ("\r\n".substr($data, 36, 8));
+			//echo "\r\nIndex to get: " . $indexToGet;
 		}
 		
 		else {
@@ -288,8 +289,10 @@ class CommandDetect extends AbstractController {
 
 					}
 					$j = 28; // serial number + command
-					
+					/*
 					if ($command=="DD") {
+						echo ($data);
+						echo ("\r\n".strlen($data)."\r\n");
 						for($i=$j; $i<(strlen($data)); $i++){
 							$dataTemp = hexdec(bin2hex($data[$i])); //TODO string offset
 							if($dataTemp === 127)
@@ -310,7 +313,7 @@ class CommandDetect extends AbstractController {
 							}
 						}
 					}
-					else {
+					else {*/
 						for($i=$j; $i<(206+$j); $i++){
 							$dataTemp = hexdec(bin2hex($data[$i])); //TODO string offset
 							if($dataTemp === 127)
@@ -330,13 +333,14 @@ class CommandDetect extends AbstractController {
 								$data[$i] = chr($dataTemp+35);
 							}
 						}
-					}
+					//}
 
 				}
 				// Define BoardType
 				$boardType = $this->getConfig($command, $data);
 				$deviceObj["boardType"] = $boardType;
 				// Define IndexToGet
+				//echo ("\r\nDATA: " . $data);
 				if (($indexToGet = $this->getIndex($command, $data))!=0) {
 					$deviceObj["Index"] = $indexToGet;
 				}
@@ -712,6 +716,8 @@ class CommandDetect extends AbstractController {
 			//Download BOARD //Download Version
 			case "DC":
 			case "CD":
+				echo ("\r\nDATA RECEIVED: " . $data . "\r\n");
+				echo ("\r\nDATA RECEIVED LENGTH: " . strlen($data) . "\r\n");
 				// * Empêche la machine de rester forcée après un 1er téléchargement *//
 				if ($deviceInfo[FORCED_UPDATE] == 1) {
 					$request->setForced($sn, 0);
@@ -741,6 +747,10 @@ class CommandDetect extends AbstractController {
 					$response = $dataResponse->getCesarMatrix(
 						$tempResponse = $dataResponse->setResponseData($fileContent)
 					);
+					/*
+					echo ("\r\nDATA SEND: " . bin2hex($tempResponse) . "\r\n");
+					echo ("\r\nDATA SEND LENGTH: " . strlen($tempResponse) . "\r\n");
+					*/
 				break;
 			//Load & copy Logs
 			case "DB":
