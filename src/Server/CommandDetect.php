@@ -449,8 +449,8 @@ class CommandDetect extends AbstractController {
 		$deviceConfig = $deviceObj["config"];
 
 	if ($command == 'DE' || $command == 'FE' || $command == 'F9') {
-		$deviceTypeId2 = deviceTypeId[$deviceType];
-		$deviceTypeId = $deviceFamilyRepository->findOneBy(["numberId" => $deviceType]);
+		$deviceTypeId = deviceTypeId[$deviceType];
+		//$deviceTypeId = $deviceFamilyRepository->findOneBy(["numberId" => $deviceType]);
 		$deviceTypeName = substr(DEVICE_TYPE_ARRAY[$deviceType], 0, -1);
 		$logFile = trim($sn).".txt";
 		/** @var array $deviceInfo 
@@ -459,7 +459,7 @@ class CommandDetect extends AbstractController {
 		 * [FORCED_UPDATE] : forced
 		*/
 		$request->initDeviceInSN($sn, $deviceTypeName);
-		$deviceInfo = $request->setDeviceInfo($sn, $version, $deviceTypeId->getId(), $ipAddr, $logFile);
+		$deviceInfo = $request->setDeviceInfo($sn, $version, $deviceTypeId, $ipAddr, $logFile);
 		$request->setDeviceToServer($sn);
 		$this->responseArray[2] = $deviceInfo;
 	}
