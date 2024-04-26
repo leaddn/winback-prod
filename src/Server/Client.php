@@ -19,7 +19,7 @@ class Client extends AbstractController
             return false;
         }
         else {
-            if (!(socket_connect($socket, "10.0.0.19", 5007))) {
+            if (!(socket_connect($socket, "20.242.146.35",5006))) {
                 echo "socket_connect() failed.\nReason:  " . socket_strerror(socket_last_error($socket)) . "\n";
                 return false;
                 
