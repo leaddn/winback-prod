@@ -21,11 +21,13 @@ class CommandDetect extends AbstractController {
     private $ptLogSave = 0;
 	private $config;
 	/**
-	 * Summary of responseArray
-	 * [0] = $indexToGet;
-	 * [1] = $response.$footer;
-	 * [2] = $deviceInfo;
-	 * [3] = $percentage;
+	 * @var array $responseArray {
+	 * 		Summary of responseArray
+	 * 		@param int $indexToGet [0].
+	 * 		@param string $response.$footer [1].
+	 * 		@param array $deviceInfo [2].
+	 * 		@param int $percentage [3] software version download percentage.
+	 * }
 	 */
 	private $responseArray = array();
 
@@ -230,37 +232,45 @@ class CommandDetect extends AbstractController {
 		return $indexToGet;
 	}
 
-	public function getDeviceVariables(string $data, DataResponse $dataResponse)
+	/**
+	 * Summary of getDeviceVariables
+	 * @param string $data
+	 * @return array
+	 */
+	public function getDeviceVariables(string $data)
 	{
-		/** @var array $deviceObj
-		 * ["Command"] = $command
-		 * ["Serial Number"]
-		 * ["Device Type"] = $deviceType
-		 * ["Device Version"]
-		 * ["Filename"]
-		 * ["boardType"] = $boardType
-		 * ["Index"]
-		 * ["Request Id"]
-		 * ["Forced Update"]
-		 */
 
-		/** @var mixed $data
+		/** @var string $data
 		 * $deviceType = [3:4]
 		 * $sn = [0:19]
 		 * $command = [20:21]
 		 * $boardType = [32:35]
 		 * 
 		 */
+
+		/** @var array $deviceObj {
+		 * @param string ["command"] $command
+		 * @param string ["serialNumber"] $sn
+		 * @param int ["deviceType"] $deviceType 
+		 * @param ["deviceVersion"]
+		 * @param string ["filename"]
+		 * @param ["boardType"] $boardType
+		 * @param ["Index"]
+		 * @param ["requestId"]
+		 * @param boolean ["forcedUpdate"]
+		 * @param ["config"]
+		 * }
+		 */
 		$deviceObj = [
-			"Command" => "",
-			"Serial Number" => "",
-			"Device Type" => "",
-			"Device Version" => "",
-			"Filename" => "",
-			"BoardType" => "",
-			"Index" => "",
-			"Request Id" => "",
-			"Forced Update" => "",
+			"command" => "",
+			"serialNumber" => "",
+			"deviceType" => "",
+			"deviceVersion" => "",
+			"filename" => "",
+			"boardType" => "",
+			"index" => "",
+			"requestId" => "",
+			"forcedUpdate" => "",
 			"config" => "",
 		];
 
@@ -269,17 +279,11 @@ class CommandDetect extends AbstractController {
                 $command = (isset($data[20]) && isset($data[21]) !== "aa") ? $data[20].$data[21] : '';
 
 				// Get command in data received
-				$deviceObj["Command"] = $command;
+				$deviceObj["command"] = $command;
 				// Get device type in data received
 				$deviceType = hexdec($data[3].$data[4]);
-				$deviceObj["Device Type"] = $deviceType;
-				/*
-				if ($command=="DD" and $deviceType==14) {
-					echo (strlen($data));
-					echo ($data);
-					exit;
-				}
-				*/
+				$deviceObj["deviceType"] = $deviceType;
+
 				if (in_array($command, cmdBack)) {
 					//throw new \Exception("hello");
 					if (strlen($data)<221) {
@@ -342,13 +346,13 @@ class CommandDetect extends AbstractController {
 				// Define IndexToGet
 				//echo ("\r\nDATA: " . $data);
 				if (($indexToGet = $this->getIndex($command, $data))!=0) {
-					$deviceObj["Index"] = $indexToGet;
+					$deviceObj["index"] = $indexToGet;
 				}
 					$sn = substr($data, 0, 20);
-					$deviceObj["Serial Number"] = $sn;
+					$deviceObj["serialNumber"] = $sn;
 
 					$this->reqId = isset($data[22]) ? hexdec($data[22].$data[23]) : 0;
-					$deviceObj["Request Id"] = $this->reqId;
+					$deviceObj["requestId"] = $this->reqId;
 					
 					switch ($command) {
 						case 'F3':
@@ -380,7 +384,7 @@ class CommandDetect extends AbstractController {
 						case 'FA':
 								if(!empty($data[28]) || !empty($data[29]) || !empty($data[30]) || !empty($data[31])){			
 									$version = hexdec($data[28].$data[29]).'.'.hexdec($data[30].$data[31]);
-									$deviceObj["Device Version"] = $version;
+									$deviceObj["deviceVersion"] = $version;
 								}
 							break;
 						case 'DD':
@@ -398,7 +402,7 @@ class CommandDetect extends AbstractController {
 						case 'CD':
 							$version = hexdec($data[28].$data[29]).'.'.hexdec($data[30].$data[31]);
 							// TODO put boardType in database
-							$deviceObj["Device Version"] = $version;
+							$deviceObj["deviceVersion"] = $version;
 							break;
 						case 'CF':
 						case 'CE':
@@ -422,14 +426,12 @@ class CommandDetect extends AbstractController {
 
 	
 	/**
-	 * Create Database connection, get device information
+	 * Create Database connection, get device information, return responseArray to the server
 	 * @param string $data
 	 * @param string $ipAddr
 	 * @param array $deviceInfo
-	 * $this->responseArray[0] = $indexToGet;
-	 * $this->responseArray[1] = $response.$footer;
-	 * $this->responseArray[2] = $deviceInfo;
-	 * $this->responseArray[3] = $percentage;
+	 * @param \App\Repository\DeviceFamilyRepository $deviceFamilyRepository
+	 * @return false|array{0 : $indexToGet, 1 : $response.$footer, 2 : $deviceInfo, 3 : $percentage} $this->responseArray
 	 */
     public function start(string $data, string $ipAddr, array $deviceInfo, DeviceFamilyRepository $deviceFamilyRepository) : false|array
 	{
@@ -438,13 +440,13 @@ class CommandDetect extends AbstractController {
 		$dataResponse = new DataResponse();
 		$request = new DbRequest();
 		// DEFINE DEVICE VARIABLES
-		$deviceObj = $this->getDeviceVariables($data, $dataResponse);
-		$sn = $deviceObj["Serial Number"];
-		$version = $deviceObj["Device Version"];
-		$deviceType = $deviceObj["Device Type"];
-		$command = $deviceObj["Command"];
-		$reqId = $deviceObj["Request Id"];
-		$indexToGet = intval($deviceObj["Index"]);
+		$deviceObj = $this->getDeviceVariables($data);
+		$sn = $deviceObj["serialNumber"];
+		$version = $deviceObj["deviceVersion"];
+		$deviceType = $deviceObj["deviceType"];
+		$command = $deviceObj["command"];
+		$reqId = $deviceObj["requestId"];
+		$indexToGet = intval($deviceObj["index"]);
 		$boardType = $deviceObj["boardType"];
 		$deviceConfig = $deviceObj["config"];
 
@@ -453,12 +455,13 @@ class CommandDetect extends AbstractController {
 		//$deviceTypeId = $deviceFamilyRepository->findOneBy(["numberId" => $deviceType]);
 		$deviceTypeName = substr(DEVICE_TYPE_ARRAY[$deviceType], 0, -1);
 		$logFile = trim($sn).".txt";
-		/** @var array $deviceInfo 
-		 * Info available in database
-		 * [SN] : sn
-		 * [FORCED_UPDATE] : forced
-		*/
+
 		$request->initDeviceInSN($sn, $deviceTypeName);
+		/** @var array{SN:string, FORCED_UPDATE:boolean} $deviceInfo 
+		 * Device info available in database
+		 * [SN] : string $sn
+		 * [FORCED_UPDATE] : boolean $forced
+		*/
 		$deviceInfo = $request->setDeviceInfo($sn, $version, $deviceTypeId, $ipAddr, $logFile);
 		$request->setDeviceToServer($sn);
 		$this->responseArray[2] = $deviceInfo;
@@ -468,7 +471,7 @@ class CommandDetect extends AbstractController {
 		$forcedUpdate = $this->getForced($deviceInfo);
 
 		$fileName = $this->getVersionUpload($deviceInfo, $boardType, $deviceType, $request);
-		$deviceObj["Filename"] = $fileName;
+		$deviceObj["filename"] = $fileName;
 
         switch ($command) {
 			/* ===== BACK COMMANDS ===== */
