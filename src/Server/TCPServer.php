@@ -91,12 +91,23 @@ class TCPServer extends Application
 		return false;
 	}
 
-	function disconnect($request, $logger, $clientsInfo, $clients, $i)
+	/**
+	 * Summary of disconnect
+	 * @param mixed $request
+	 * @param mixed $logger
+	 * @param array $clientsInfo
+	 * @param array $clients
+	 * @param string $sn
+	 * @param string $ip
+	 * @param int $i
+	 * @return array
+	 */
+	function disconnect($request, $logger, $clientsInfo, $clients, $sn, $ip, $i)
 	{
-		$request->setConnect(0, $clientsInfo[$i][0]);
+		$request->setConnect(0, $sn);
 		socket_close($clients[$i]);
-		echo "\n".date("Y-m-d H:i:s | ")."client ".$clientsInfo[$i][0]." ip ".$clientsInfo[$i][1]." with key ".$i." disconnected.\n";
-		$logger->info("client ".$clientsInfo[$i][0]." ip ".$clientsInfo[$i][1]." with key ".$i." disconnected.");
+		echo "\n".date("Y-m-d H:i:s | ")."client ".$sn." ip ".$ip." with key ".$i." disconnected.\n";
+		$logger->info("client ".$sn." ip ".$ip." with key ".$i." disconnected.");
 		unset($clients[$i]);	
 		unset($clientsInfo[$i]);
 		$disconnectArray[0] = $clients;
@@ -106,14 +117,17 @@ class TCPServer extends Application
 	/**
 	 * Create Socket and connect to server
 	 * @param string $port port number to listen on
-	 * @return array|bool $resultArray - array of sockets ? [0] => Array ([0]=> Socket Object()), [1]=> Socket Object()
+	 * @return array|bool $resultArray {
+	 * 		@var array $clients [0] array of sockets
+	 * 		@var \Socket $sock [1] Socket Object
+	 * }
 	 */
 	function createServer($port)
 	{
 		set_time_limit(0);
 		ob_implicit_flush();
 
-		$msg = str_repeat("\r\n".str_repeat("#", 30)."\r\n", 3)."\r\n==========   SERVER STARTED {$_ENV['ADDRESS']}:{$port}   ==========\r\n".str_repeat("\r\n".str_repeat("#", 30)."\r\n", 3);
+		$msg = str_repeat("\r\n", 1).str_repeat("\r\n".str_repeat(" ", 20).str_repeat("#", 30)."\r\n", 3)."\r\n".str_repeat(" ", 10).str_repeat("=", 10).str_repeat(" ", 3)."SERVER STARTED {$_ENV['ADDRESS']}:{$port}".str_repeat(" ", 3).str_repeat("=", 10)."\r\n".str_repeat("\r\n".str_repeat(" ", 20).str_repeat("#", 30)."\r\n", 3).str_repeat("\r\n", 1);
 		echo 'User IP Address - '.gethostbyname("winback-assist.com"); 
 		//print_r($_SERVER);
 		echo($msg);
@@ -154,16 +168,18 @@ class TCPServer extends Application
 		 * [1] = $sock
 		 */
 		/**
-		 * @var array $clientsInfo
-		 * [0] = sn
-		 * [1] = ip:port
-		 * [2] = timeOut
-		 * [3] = ip
-		 * [4] = port
-		 * [5] = command history //used to show the last command send by the device
-		 * [6] = index //used to get indexToGet when downloading version to avoid downloading the same data chunk if server is too slow or blocked
-		 * [7] = device info
-		 * [8] = download percentage
+		 * @var array $clientsInfo {
+		 * array of sn connected as key and array of info linked to this sn as values (ex: [WIN0D_TEST_61706    ] => Array), the subarray is a key-index paired with each info
+		 * @param string $sn [][0]
+		 * @param string $ip:$port [][1]
+		 * @param int $timeOut [][2]
+		 * @param string $ip [][3]
+		 * @param string $port [][4]
+		 * @param string $commandHistory [][5] show the last command send by the device
+		 * @param $index [][6] get indexToGet when downloading version to avoid downloading the same data chunk if server is too slow or blocked
+		 * @param array $deviceInfo [][7]
+		 * @param int $percentage [][8] download percentage
+		 * }
 		 */
 
 		 /**
@@ -171,14 +187,14 @@ class TCPServer extends Application
 
 		  */
 		/**
-		 * @var array $responseArray
-		 * Response array return from CommandDetect
-		 * [0] = $indexToGet;
-		 * [1] = $response.$footer;
-		 * [2] = $deviceInfo;
-		 * [3] = $percentage;
+		 * @var array $responseArray {
+		 * 		Summary of responseArray
+		 * 		@param int $indexToGet [0].
+		 * 		@param string $response.$footer [1].
+		 * 		@param array $deviceInfo [2].
+		 * 		@param int $percentage [3] software version download percentage.
+		 * }
 		 */
-
 		/** @var array $deviceInfo
 		*  	[id] =>
 		*	[device_family_id] =>
@@ -206,11 +222,6 @@ class TCPServer extends Application
 		*	[country]
 		*	[city]
 		*/
-
-		/**
-		 * @var array $clientsInfo
-		 * array of sn connected as key and array of info linked to this sn as values (ex: [WIN0D_TEST_61706    ] => Array), the subarray is a key-index paired with each info (ex: [1] => 'ip address : port')
-		 */
 		$this->preflight();
 		$request = new DbRequest();
 		$resultArray = $this->createServer($port);
@@ -231,19 +242,12 @@ class TCPServer extends Application
 				if ($i > 0) {
 					if(isset($clientsInfo[$i][2])){
 						// If process takes too much time, close socket
-							if($clientsInfo[$i][2] < hrtime(true)){
-								/*
-								$request->setConnect(0, $clientsInfo[$i][0]);
-								socket_close($clients[$i]);
-								echo "\n".date("Y-m-d H:i:s | ")."client ".$clientsInfo[$i][0]." ip ".$clientsInfo[$i][1]." with key ".$i." disconnected.\n";
-								$logger->info("client ".$clientsInfo[$i][0]." ip ".$clientsInfo[$i][1]." with key ".$i." disconnected.");
-								unset($clients[$i]);	
-								unset($clientsInfo[$i]);
-								*/
-								$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $i);
-								$clients = $disconnectArray[0];
-								$clientsInfo = $disconnectArray[1];
-							}
+						if($clientsInfo[$i][2] < hrtime(true)){
+							//$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $i);
+							$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $clientsInfo[$i][0], $clientsInfo[$i][1], $i);
+							$clients = $disconnectArray[0];
+							$clientsInfo = $disconnectArray[1];
+						}
 					}
 				}
 			}
@@ -291,33 +295,28 @@ class TCPServer extends Application
 			foreach ($read as $read_sock)
 			{
 				// read until newline or 1024 bytes
-				//$data = @socket_read($read_sock, 4096, PHP_BINARY_READ) or socket_strerror(socket_last_error());//die("Could not read input\n");
-				//$data = @socket_read($read_sock, 4096, PHP_BINARY_READ);
 
 				$data = @socket_read($read_sock, 4096, PHP_BINARY_READ);
 					//=> If data exists
 					if (!empty($data))
 					{
-						
 						reset($clientsInfo);
-						//$logger->info("********************* Connected list *****************************");
 						echo "\r\n********************* Connected list *****************************\r\n";
-						//$this->writeServerLog("\r\n********************* Connected list *****************************\r\n");
-						/*
-						if ($i > 0) {
-							echo "\r\n".$i." | SN : ".$clientsInfo[$i][0]." | IP : ".$clientsInfo[$i][1]." | \r\nTime : ".date("H:i:s")." | Date : ".date("Y-m-d")." | Time : ".end($clientsInfo[$i][7])." | Cmd : ".end($clientsInfo[$i][5])."\r\n";
-						}
-						*/
+						//$logger->info("********************* Connected list *****************************");
 						//=> Initiate client info (id, sn, ip, time) and update it at each iteration
 						// if sn or ip from db not in connected list
 						for($i=1; $i<count($clients); $i++){
-						//foreach ($clients as $i=>$client){
 							next($clientsInfo);
 							if (isset(current($clientsInfo)[1]) && isset(current($clientsInfo)[0])) {
-								echo "\r\n".$i." | SN : ".current($clientsInfo)[0]." | IP : ".current($clientsInfo)[1]." | \r\nDate : ".date("H:i:s")." | Cmd : ".current($clientsInfo)[5]." | Percentage : ".current($clientsInfo)[8]."\r\n";
-								//$logger->info($i." | SN : ".current($clientsInfo)[0]." | IP : ".current($clientsInfo)[1]." | \r\nDate : ".date("H:i:s")." | Cmd : ".current($clientsInfo)[5]." | Percentage : ".current($clientsInfo)[8]);
-								//$this->writeServerLog("\r\n".$i." | SN : ".current($clientsInfo)[0]." | IP : ".current($clientsInfo)[1]." | \r\nTime : ".date("H:i:s")." | Date : ".date("Y-m-d")."\r\n");
-								
+								echo "\r\n".$i." | SN : ".current($clientsInfo)[0]." | IP : ".current($clientsInfo)[1]." | \r\nDate : ".date("Y-m-d | H:i:s")." | Cmd : ".current($clientsInfo)[5]." | Percentage : ".current($clientsInfo)[8]."\r\n";
+								/*
+								$logger->info($i, [
+									'serialNumber' => current($clientsInfo)[0],
+									'IP Adress' => current($clientsInfo)[1],
+									'Command' => current($clientsInfo)[5],
+									'Percentage' => current($clientsInfo)[8]
+								]);
+								*/
 							}
 						}
 						
@@ -331,13 +330,11 @@ class TCPServer extends Application
 								//echo ("\r\nData received: " . $data . "\r\n");
 								$time_start_socket = microtime(true);
 								$task = new CommandDetect();
-								//$clientServeur = new Client();
+								//$clientServeur = new Client(); // Only decomment in BridgeServer, DO NOT DECOMMENT HERE
 								$sn = substr($data, 0, 20);
 								$deviceType = hexdec($data[3].$data[4]);
 								$clientsInfo[$deviceKey][0] = $sn; // Show serial number in terminal
 								$deviceCommand = $data[20].$data[21];
-
-								//$deviceInfo = $clientsInfo[$deviceKey][7];
 
 								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $deviceFamilyRepository);
 
@@ -345,7 +342,6 @@ class TCPServer extends Application
 									// récupérer deviceInfo
 									if (array_key_exists(2, $responseArray)) {
 										$clientsInfo[$deviceKey][7] = $responseArray[2];
-										//print_r($clientsInfo[$deviceKey][7]);
 									}
 									
 									// check if index is not duplicated
@@ -355,8 +351,7 @@ class TCPServer extends Application
 										if ($indexToGet != $clientsInfo[$deviceKey][6]) {
 											socket_write($clients[$deviceKey], $responseArray[1]);
 											$clientsInfo[$deviceKey][6] = $indexToGet;
-											//echo "Index: ".$indexToGet;
-											//$clientServeur->main($data);
+											//$clientServeur->main($data); // Only decomment in BridgeServer, DO NOT DECOMMENT HERE
 										}
 									}
 									// Check & show percentage number
@@ -380,7 +375,7 @@ class TCPServer extends Application
 										//print_r($responseArray[1]);
 										socket_write($clients[$deviceKey], $responseArray[1]);
 										//echo bin2hex($responseArray[1]);
-										//$clientServeur->main($data);
+										//$clientServeur->main($data); // Only decomment in BridgeServer, DO NOT DECOMMENT HERE
 									}
 									
 									//socket_write($clients[$key], $responseArray[1]);
@@ -401,22 +396,9 @@ class TCPServer extends Application
 										{
 											if($i!=$deviceKey)
 											{
-												$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $i);
+												$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $clientsInfo[$i][0], $clientsInfo[$i][1], $i);
 												$clients = $disconnectArray[0];
 												$clientsInfo = $disconnectArray[1];
-												/*
-												echo("socket is closed :".$clientsInfo[$i][0]."with key: ".$i);
-												$logger->info("Socket is closed :".$clientsInfo[$i][0]."with key: ".$i);
-												//$this->writeServerLog("socket is closed :".$clientsInfo[$i][0]."with key: ".$i);
-												$key2del = array_search($this->linkConnection[$clientsInfo[$deviceKey][0]][0], $clients);
-
-												//$request->setConnect(0, $clientsInfo[$i][0]);
-												socket_close($clients[$i]);
-												unset($clients[$i]);
-												unset($clientsInfo[$i]);
-												//array_splice($clients, $i, 1);
-												//array_splice($clientsInfo, $i, 1);
-												*/
 											}
 										}
 									}
