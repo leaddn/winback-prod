@@ -29,7 +29,7 @@ class TCPServer extends Application
 	 */
 	private $linkConnection = [];
 	private $clients;
-
+	private $deviceInfo;
 	/**
 	 * Confirm system can run script
 	 */
@@ -333,14 +333,29 @@ class TCPServer extends Application
 								//$clientServeur = new Client(); // Only decomment in BridgeServer, DO NOT DECOMMENT HERE
 								$sn = substr($data, 0, 20);
 								$deviceType = hexdec($data[3].$data[4]);
+								$version = hexdec($data[28].$data[29]).'.'.hexdec($data[30].$data[31]);
+								$ipAddr = $clientsInfo[$deviceKey][3];
 								$clientsInfo[$deviceKey][0] = $sn; // Show serial number in terminal
 								$deviceCommand = $data[20].$data[21];
+								// TODO to delete
+								if ($deviceCommand == 'DE' || $deviceCommand == 'FE' || $deviceCommand == 'F9') {
+									$deviceTypeId = deviceTypeId[$deviceType];
+									//$deviceTypeId = $deviceFamilyRepository->findOneBy(["numberId" => $deviceType]);
+									$deviceTypeName = substr(DEVICE_TYPE_ARRAY[$deviceType], 0, -1);
+									$logFile = trim($sn) . ".txt";
 
-								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $deviceFamilyRepository);
-
+									$request->initDeviceInSN($sn, $deviceTypeName);
+									$this->deviceInfo = $request->setDeviceInfo($sn, $version, $deviceTypeId, $ipAddr, $logFile);
+									$request->setDeviceToServer($sn);
+									//$this->responseArray[2] = $deviceInfo;
+								}
+								//TODO to delete
+								//$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $deviceFamilyRepository);
+								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $this->deviceInfo, $deviceFamilyRepository);
 								if ($responseArray != False) {
 									// récupérer deviceInfo
 									if (array_key_exists(2, $responseArray)) {
+									var_dump($responseArray[2]);
 										$clientsInfo[$deviceKey][7] = $responseArray[2];
 									}
 									
