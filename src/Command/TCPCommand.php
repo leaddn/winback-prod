@@ -1,13 +1,10 @@
 <?php
 namespace App\Command;
 
-use App\Repository\DeviceFamilyRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Ratchet\Server\IoServer;
 use App\Server\TCPServer;
-use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
@@ -19,11 +16,9 @@ class TCPCommand extends Command
     protected static $defaultName = 'app:tcpserver';
     
     private $logger;
-    private $deviceFamilyRepository;
 
-    public function __construct(LoggerInterface $logger, DeviceFamilyRepository $deviceFamilyRepository) {                
+    public function __construct(LoggerInterface $logger) {                
         $this->logger = $logger;
-        $this->deviceFamilyRepository = $deviceFamilyRepository;
         parent::__construct();               
     }
     
@@ -50,11 +45,9 @@ class TCPCommand extends Command
         $output->writeln('You have just selected: '.$port);
         
         $server = new TCPServer();
-        $pathToPython = "./src/Server/TCPServer.php";
-        //$server = new TCPServer(['php', $pathToPython]);
         $dispatcher = new EventDispatcher();
         $server->setDispatcher($dispatcher);
-        $server->runServer($this->logger, $this->deviceFamilyRepository, $port);
+        $server->runServer($this->logger, $port);
 
         $dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event): void {
             $output = $event->getOutput();

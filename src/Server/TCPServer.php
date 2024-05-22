@@ -1,19 +1,12 @@
 <?php
 namespace App\Server;
 
-use App\Repository\DeviceFamilyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Server\CommandDetect;
-use App\Server\DataResponse;
 
 use App\Server\DbRequest;
-use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Process\Process;
 
 require_once(dirname(__FILE__, 2).'/Server/DataResponse.php');
 require_once(dirname(__FILE__, 2).'/Server/DbRequest.php');
@@ -156,11 +149,10 @@ class TCPServer extends Application
 	/**
 	 * runServer
 	 * @param LoggerInterface $logger
-	 * @param DeviceFamilyRepository $deviceFamilyRepository
 	 * @param string $port
 	 * @return never
 	 */
-	function runServer(LoggerInterface $logger, DeviceFamilyRepository $deviceFamilyRepository, $port)
+	function runServer(LoggerInterface $logger, $port)
 	{
 		/**
 		 * @var array $resultArray
@@ -190,7 +182,7 @@ class TCPServer extends Application
 		 * @var array $responseArray {
 		 * 		Summary of responseArray
 		 * 		@param int $indexToGet [0].
-		 * 		@param string $response.$footer [1].
+		 * 		@param string - $response.$footer [1].
 		 * 		@param array $deviceInfo [2].
 		 * 		@param int $percentage [3] software version download percentage.
 		 * }
@@ -323,7 +315,7 @@ class TCPServer extends Application
 						
 						// if commands are returned from device data
 						if($this->dataToTreat($data)) // => msg from device
-						{ 
+						{
 							$deviceKey = array_search($read_sock, $clients);			
 							$clientsInfo[$deviceKey][2] = hrtime(true)+$this->timeOut;
 							if(substr($data, 0, 1) == 'W' && $data[3] == 0 && array_key_exists(hexdec($data[3].$data[4]), DEVICE_TYPE_ARRAY)){ // Verify that data comes from a device (all devices start with W)
@@ -337,6 +329,7 @@ class TCPServer extends Application
 								$ipAddr = $clientsInfo[$deviceKey][3];
 								$clientsInfo[$deviceKey][0] = $sn; // Show serial number in terminal
 								$deviceCommand = $data[20].$data[21];
+								/*
 								// TODO to delete
 								if ($deviceCommand == 'DE' || $deviceCommand == 'FE' || $deviceCommand == 'F9') {
 									$deviceTypeId = deviceTypeId[$deviceType];
@@ -350,12 +343,12 @@ class TCPServer extends Application
 									//$this->responseArray[2] = $deviceInfo;
 								}
 								//TODO to delete
+								*/
 								//$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $deviceFamilyRepository);
-								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $this->deviceInfo, $deviceFamilyRepository);
+								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7]);
 								if ($responseArray != False) {
 									// récupérer deviceInfo
 									if (array_key_exists(2, $responseArray)) {
-									var_dump($responseArray[2]);
 										$clientsInfo[$deviceKey][7] = $responseArray[2];
 									}
 									
@@ -366,6 +359,11 @@ class TCPServer extends Application
 										if ($indexToGet != $clientsInfo[$deviceKey][6]) {
 											socket_write($clients[$deviceKey], $responseArray[1]);
 											$clientsInfo[$deviceKey][6] = $indexToGet;
+											/*
+											var_dump("\r\nRESPONSE SOCKET\r\n");
+											var_dump($responseArray[1]);
+											var_dump("\r\n");
+											*/
 											//$clientServeur->main($data); // Only decomment in BridgeServer, DO NOT DECOMMENT HERE
 										}
 									}
