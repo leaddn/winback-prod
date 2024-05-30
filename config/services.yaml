@@ -33,14 +33,10 @@ services:
         arguments:
             $targetDirectory: '%uploads_directory%'
 
-    App\EventListener\ExceptionListener:
-        tags: [kernel.event_listener]
+    #App\EventListener\ExceptionListener:
+        #tags: [kernel.event_listener]
         
     Blackfire\Bridge\Symfony\Event\MonitoredCommandSubscriber: ~
-
-when@dev:       
-    imports:
-        - { resource: '../configServer/*.php' }
-when@prod:
-    imports:
-        - { resource: '../configProd/*.php' }
+       
+imports:
+    - { resource: '../configServer/*.php' }
