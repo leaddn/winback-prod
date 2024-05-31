@@ -23,6 +23,36 @@ class TCPServer extends Application
 	private $linkConnection = [];
 	private $clients;
 	private $deviceInfo;
+
+	/**
+	 * Writes data to a socket in packets of size 512 bytes.
+	 *
+	 * @param \Socket $socket The socket resource.
+	 * @param string $data The data to send.
+	 * @return bool True on success, false on failure.
+	 */
+	function writeToSocketInPackets($socket, $data) {
+		$packetSize = 2560;
+		$dataLength = strlen($data);
+		$bytesSent = 0;
+
+		while ($bytesSent < $dataLength) {
+			$packet = substr($data, $bytesSent, $packetSize);
+			$result = socket_write($socket, $packet, strlen($packet));
+
+			if ($result === false) {
+				echo "Socket write failed: " . socket_strerror(socket_last_error($socket)) . "\n";
+				return false;
+			}
+			echo "DATA SEND ".strlen($packet);
+			$bytesSent += $result;
+			//sleep(1);
+			//usleep(200000);
+		}
+
+		return true;
+	}
+
 	/**
 	 * Confirm system can run script
 	 */
@@ -324,9 +354,6 @@ class TCPServer extends Application
 								$task = new CommandDetect();
 								//$clientServeur = new Client(); // Only decomment in BridgeServer, DO NOT DECOMMENT HERE
 								$sn = substr($data, 0, 20);
-								$deviceType = hexdec($data[3].$data[4]);
-								$version = hexdec($data[28].$data[29]).'.'.hexdec($data[30].$data[31]);
-								$ipAddr = $clientsInfo[$deviceKey][3];
 								$clientsInfo[$deviceKey][0] = $sn; // Show serial number in terminal
 								$deviceCommand = $data[20].$data[21];
 								/*
