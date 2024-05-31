@@ -312,6 +312,22 @@ class DbRequest {
         }
     }
 
+    function selectDevice(string $sn)
+    {
+        $whereCond = SN." = '".$sn."'";
+        $req = $this->select('*', DEVICE_TABLE, $whereCond);
+        if($res = $this->sendRq($req)){
+            if($row = mysqli_fetch_assoc($res)){
+                return $row;
+            } else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
     /**
      * Insert Device to SN Table if not exists yet
      * @param string $sn
