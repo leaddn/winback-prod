@@ -107,12 +107,15 @@ class DataResponse extends Utils
      * @param string $fileName
      * @param int $fromIndex
      * @param int $startOffset
-     * @return array
+     * @return array $resultArray{
+     *      @var string $fileContentFromIndex [0]
+     *      @var int $nbDataToSend [1]
+     * }
      */
     function setFileContent4096Bytes($fileName, $fromIndex = 0, $startOffset = 0){
         $startOffset += $fromIndex;
         //Export to a new file
-        $fileContentFromIndex = file_get_contents($fileName, $use_include_path=false, $context=null, $offset=$startOffset, $length=4096);
+        $fileContentFromIndex = file_get_contents($fileName, $use_include_path=false, $context=null, $offset=$startOffset, $length=1024);
         $resultArray = array($fileContentFromIndex, strlen($fileContentFromIndex));
 		return $resultArray;
     }

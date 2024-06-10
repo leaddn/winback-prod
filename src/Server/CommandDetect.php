@@ -661,7 +661,8 @@ class CommandDetect extends AbstractController {
 				if ($deviceInfo[IMAGE_ID] != 0) {
 					$commandId = 1;
 					if ($deviceInfo[IMAGE_ID] == 1) {
-						$image_path = "C:\wamp64\www\public\winback\public\Ressource\images\\".DEVICE_TYPE_ARRAY[$deviceType].trim($sn).$deviceInfo[IMAGE_UP];
+						//$image_path = "C:\wamp64\www\public\winback\public\Ressource\images\\".DEVICE_TYPE_ARRAY[$deviceType].trim($sn).$deviceInfo[IMAGE_UP];
+						TODO $image_path = $_ENV["IMAGE_PATH"].DEVICE_TYPE_ARRAY[$deviceType].trim($sn)."/".$deviceInfo[IMAGE_UP];
 						//$image_path_copy = 
 						$size = filesize($image_path)-$indexToGet;
 						$filesize =  filesize($image_path);
@@ -716,7 +717,7 @@ class CommandDetect extends AbstractController {
 				$directoryPath = preg_replace($pattern, "", $directoryPath, 1);
 				if(file_exists($directoryPath)) {
 					$size=(filesize($directoryPath)-$indexToGet);
-					if($size>4096)$size=4096;
+					if($size>1024)$size=1024;
 					$dataResponse->setHeader($command, $this->reqId, $size);
 					$tempResponse = $dataResponse->getFile4096Bytes($directoryPath, $indexToGet, $size);
 					$response = $dataResponse->getCesarMatrix($tempResponse);
@@ -791,7 +792,7 @@ class CommandDetect extends AbstractController {
 			//Download PUBS
 		    case "D8":
 				$size = (filesize($_ENV['PUB_PATH'].DEVICE_TYPE_ARRAY[$deviceType]."PUBS.bin")-$indexToGet);
-				if($size>4096)$size=4096;
+				if($size>1024)$size=1024;
 				$dataResponse->setHeader($command, $this->reqId, $size);
 				$response = $dataResponse->getCesarMatrix(
 					$tempResponse = $dataResponse->getPubsFile(DEVICE_TYPE_ARRAY[$deviceType], $indexToGet, $size)
@@ -812,7 +813,7 @@ class CommandDetect extends AbstractController {
 					$directoryPath = $_ENV['LIB_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $this->path;
 				}
 				$size=(filesize($directoryPath)-$indexToGet);
-				if($size>4096)$size=4096;
+				if($size>1024)$size=1024;
 				$dataResponse->setHeader($command, $this->reqId, $size);
 				$tempResponse = $dataResponse->getFile4096Bytes($directoryPath, $indexToGet, $size);
 				$response = $dataResponse->getCesarMatrix($tempResponse);
@@ -824,7 +825,13 @@ class CommandDetect extends AbstractController {
 				$logTxt = "Version: ".$deviceInfo[DEVICE_VERSION]." Upload version: ".$deviceInfo[VERSION_UPLOAD]." Address: ".$deviceInfo[IP_ADDR]." Country: ".$deviceInfo[COUNTRY];
 				$dataResponse->writeVersionLog($sn, $deviceType, $logTxt);
 				$dataResponse->setHeader($command, $this->reqId, 39);
-				$fileContent = $dataResponse->getFileContent($deviceType, $fileName);
+				$fileContent2 = $dataResponse->getFileContent($deviceType, $fileName);
+				$path = $_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName;
+				//$fileContent2 = $dataResponse->getFileContent2($path);
+				$fileContent = '';
+				foreach ($dataResponse->getFileContent2($path) as $line) {
+					$fileContent .= $line;
+				}
 				$startOffset = $dataResponse->getIndexForImg($fileContent);
 				/*
 				$fileContent2 = $dataResponse->getChunk($_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName, 1024);
@@ -853,7 +860,12 @@ class CommandDetect extends AbstractController {
 					$deviceInfo[FORCED_UPDATE] = 0;
 					$forcedUpdate = 0;
 				}
-				$totalFileContent = $dataResponse->getFileContent($deviceType, $fileName);
+				$path = $_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName;
+				//$totalFileContent = $dataResponse->getFileContent($deviceType, $fileName);
+				$totalFileContent = '';
+				foreach ($dataResponse->getFileContent2($path) as $line) {
+					$totalFileContent .= $line;
+				}
 				$filesize = strlen($totalFileContent);
 				$percentage = intval(($indexToGet/$filesize)*100);
 				$dataResponse->writeCommandLog($sn, $deviceType, "\r\n".date("Y-m-d H:i:s | ").$indexToGet."/".$filesize . ' bytes - '.$percentage." %\r\n");
@@ -869,7 +881,12 @@ class CommandDetect extends AbstractController {
 			case "F7":
 			case "F6":
 			case "F5":
-				$totalFileContent = $dataResponse->getFileContent($deviceType, $fileName);
+				$path = $_ENV['PACK_PATH'] . DEVICE_TYPE_ARRAY[$deviceType] . $fileName;
+				$totalFileContent = '';
+				foreach ($dataResponse->getFileContent2($path) as $line) {
+					$totalFileContent .= $line;
+				}
+				//$totalFileContent = $dataResponse->getFileContent($deviceType, $fileName);
 				$filesize = strlen($totalFileContent);
 				$percentage = intval(($indexToGet/$filesize)*100);
 				$dataResponse->writeCommandLog($sn, $deviceType, "\r\n".date("Y-m-d H:i:s | ").$indexToGet."/".$filesize . ' bytes - '.$percentage." %\r\n");

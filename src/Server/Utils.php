@@ -70,6 +70,32 @@ class Utils {
         }
     }
 
+    function getFileContent2($file_path, $callback = null)
+    {
+        // Check if the file exists
+        if (!file_exists($file_path)) {
+            return "Error: The file does not exist.";
+        }
+
+        // Open the file for reading
+        $handle = fopen($file_path, 'r');
+
+        // Check if the file handle is valid
+        if (!$handle) {
+            return "Error: Unable to open the file.";
+        }
+
+        // Use a generator to yield lines from the file
+        try {
+            while (($line = fgets($handle)) !== false) {
+                yield $line;
+            }
+        } finally {
+            // Close the file handle
+            fclose($handle);
+        }
+    }
+
     function getFileSize(string $deviceType, string $fileName) : string|bool
     {
         if (file_exists($_ENV['PACK_PATH'])) { # check that directory exists and is accessible
