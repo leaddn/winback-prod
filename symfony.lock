@@ -658,9 +658,6 @@
             "config/packages/validator.yaml"
         ]
     },
-    "symfony/var-dumper": {
-        "version": "v6.0.6"
-    },
     "symfony/var-exporter": {
         "version": "v6.0.6"
     },

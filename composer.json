@@ -27,6 +27,7 @@
         "symfony/config": "6.3.*",
         "symfony/console": "6.3.*",
         "symfony/dotenv": "6.3.*",
+        "symfony/error-handler": "6.3.*",
         "symfony/finder": "6.3.*",
         "symfony/flex": "1.19.2",
         "symfony/form": "6.3.*",
@@ -113,7 +114,6 @@
         "symfony/maker-bundle": "^1.43",
         "symfony/phpunit-bridge": "^6.3",
         "symfony/stopwatch": "6.3.*",
-        "symfony/var-dumper": "6.3.*",
         "symfony/web-profiler-bundle": "6.3.*"
     }
 }
