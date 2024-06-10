@@ -51,7 +51,7 @@ class BridgeCommand extends Command
         $server = new BridgeServer();
         $dispatcher = new EventDispatcher();
         $server->setDispatcher($dispatcher);
-        $server->runServer($this->logger, $this->deviceFamilyRepository, $port);
+        $server->runServer($this->logger, $port);
 
         $dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event): void {
             $output = $event->getOutput();

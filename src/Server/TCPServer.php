@@ -60,7 +60,7 @@ class TCPServer extends Application
 	{
 		$phpversion_array = explode('.', phpversion());
 		if ((int)$phpversion_array[0].$phpversion_array[1] < 80) {
-			die('minimum php required is 8.0. exiting');
+			die('minimum php required is 8.2. exiting');
 		}
 	}
 
@@ -386,11 +386,6 @@ class TCPServer extends Application
 										if ($indexToGet != $clientsInfo[$deviceKey][6]) {
 											socket_write($clients[$deviceKey], $responseArray[1]);
 											$clientsInfo[$deviceKey][6] = $indexToGet;
-											/*
-											var_dump("\r\nRESPONSE SOCKET\r\n");
-											var_dump($responseArray[1]);
-											var_dump("\r\n");
-											*/
 											//$clientServeur->main($data); // Only decomment in BridgeServer, DO NOT DECOMMENT HERE
 										}
 									}

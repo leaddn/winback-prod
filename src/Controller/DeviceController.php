@@ -228,21 +228,6 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route("/selected/{id}/{select_bool}", name="selected")
-     */
-    public function selected(Device $device, ManagerRegistry $doctrine, $select_bool)
-    {
-        print_r($select_bool);
-        $device->setSelected(($select_bool==0)?0:1);
-        //$device->setSelected($select_bool);
-        $em = $doctrine->getManager('default');
-        $em->persist($device);
-        $em->flush();
-
-        return $this->redirectToRoute('device');
-    }  
-
-    /**
     * @Route("/updated/{id}/{version}/", name="updated")
     * Update version in modal
     */

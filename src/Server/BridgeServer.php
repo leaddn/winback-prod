@@ -1,19 +1,12 @@
 <?php
 namespace App\Server;
 
-use App\Repository\DeviceFamilyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Server\CommandDetect;
-use App\Server\DataResponse;
 
 use App\Server\DbRequest;
-use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Process\Process;
 
 require_once(dirname(__FILE__, 2).'/Server/DataResponse.php');
 require_once(dirname(__FILE__, 2).'/Server/DbRequest.php');
@@ -29,6 +22,36 @@ class BridgeServer extends Application
 	 */
 	private $linkConnection = [];
 	private $clients;
+	private $deviceInfo;
+
+	/**
+	 * Writes data to a socket in packets of size 512 bytes.
+	 *
+	 * @param \Socket $socket The socket resource.
+	 * @param string $data The data to send.
+	 * @return bool True on success, false on failure.
+	 */
+	function writeToSocketInPackets($socket, $data) {
+		$packetSize = 2560;
+		$dataLength = strlen($data);
+		$bytesSent = 0;
+
+		while ($bytesSent < $dataLength) {
+			$packet = substr($data, $bytesSent, $packetSize);
+			$result = socket_write($socket, $packet, strlen($packet));
+
+			if ($result === false) {
+				echo "Socket write failed: " . socket_strerror(socket_last_error($socket)) . "\n";
+				return false;
+			}
+			echo "DATA SEND ".strlen($packet);
+			$bytesSent += $result;
+			//sleep(1);
+			//usleep(200000);
+		}
+
+		return true;
+	}
 
 	/**
 	 * Confirm system can run script
@@ -37,7 +60,7 @@ class BridgeServer extends Application
 	{
 		$phpversion_array = explode('.', phpversion());
 		if ((int)$phpversion_array[0].$phpversion_array[1] < 80) {
-			die('minimum php required is 8.0. exiting');
+			die('minimum php required is 8.2. exiting');
 		}
 	}
 
@@ -91,12 +114,23 @@ class BridgeServer extends Application
 		return false;
 	}
 
-	function disconnect($request, $logger, $clientsInfo, $clients, $i)
+	/**
+	 * Summary of disconnect
+	 * @param mixed $request
+	 * @param mixed $logger
+	 * @param array $clientsInfo
+	 * @param array $clients
+	 * @param string $sn
+	 * @param string $ip
+	 * @param int $i
+	 * @return array
+	 */
+	function disconnect($request, $logger, $clientsInfo, $clients, $sn, $ip, $i)
 	{
-		$request->setConnect(0, $clientsInfo[$i][0]);
+		$request->setConnect(0, $sn);
 		socket_close($clients[$i]);
-		echo "\n".date("Y-m-d H:i:s | ")."client ".$clientsInfo[$i][0]." ip ".$clientsInfo[$i][1]." with key ".$i." disconnected.\n";
-		$logger->info("client ".$clientsInfo[$i][0]." ip ".$clientsInfo[$i][1]." with key ".$i." disconnected.");
+		echo "\n".date("Y-m-d H:i:s | ")."client ".$sn." ip ".$ip." with key ".$i." disconnected.\n";
+		$logger->info("client ".$sn." ip ".$ip." with key ".$i." disconnected.");
 		unset($clients[$i]);	
 		unset($clientsInfo[$i]);
 		$disconnectArray[0] = $clients;
@@ -106,14 +140,17 @@ class BridgeServer extends Application
 	/**
 	 * Create Socket and connect to server
 	 * @param string $port port number to listen on
-	 * @return array|bool $resultArray - array of sockets ? [0] => Array ([0]=> Socket Object()), [1]=> Socket Object()
+	 * @return array|bool $resultArray {
+	 * 		@var array $clients [0] array of sockets
+	 * 		@var \Socket $sock [1] Socket Object
+	 * }
 	 */
 	function createServer($port)
 	{
 		set_time_limit(0);
 		ob_implicit_flush();
 
-		$msg = str_repeat("\r\n".str_repeat("#", 30)."\r\n", 3)."\r\n==========   SERVER STARTED {$_ENV['ADDRESS']}:{$port}   ==========\r\n".str_repeat("\r\n".str_repeat("#", 30)."\r\n", 3);
+		$msg = str_repeat("\r\n", 1).str_repeat("\r\n".str_repeat(" ", 20).str_repeat("#", 30)."\r\n", 3)."\r\n".str_repeat(" ", 10).str_repeat("=", 10).str_repeat(" ", 3)."SERVER STARTED {$_ENV['ADDRESS']}:{$port}".str_repeat(" ", 3).str_repeat("=", 10)."\r\n".str_repeat("\r\n".str_repeat(" ", 20).str_repeat("#", 30)."\r\n", 3).str_repeat("\r\n", 1);
 		echo 'User IP Address - '.gethostbyname("winback-assist.com"); 
 		//print_r($_SERVER);
 		echo($msg);
@@ -142,11 +179,10 @@ class BridgeServer extends Application
 	/**
 	 * runServer
 	 * @param LoggerInterface $logger
-	 * @param DeviceFamilyRepository $deviceFamilyRepository
 	 * @param string $port
 	 * @return never
 	 */
-	function runServer(LoggerInterface $logger, DeviceFamilyRepository $deviceFamilyRepository, $port)
+	function runServer(LoggerInterface $logger, $port)
 	{
 		/**
 		 * @var array $resultArray
@@ -154,16 +190,18 @@ class BridgeServer extends Application
 		 * [1] = $sock
 		 */
 		/**
-		 * @var array $clientsInfo
-		 * [0] = sn
-		 * [1] = ip:port
-		 * [2] = timeOut
-		 * [3] = ip
-		 * [4] = port
-		 * [5] = command history //used to show the last command send by the device
-		 * [6] = index //used to get indexToGet when downloading version to avoid downloading the same data chunk if server is too slow or blocked
-		 * [7] = device info
-		 * [8] = download percentage
+		 * @var array $clientsInfo {
+		 * array of sn connected as key and array of info linked to this sn as values (ex: [WIN0D_TEST_61706    ] => Array), the subarray is a key-index paired with each info
+		 * @param string $sn [][0]
+		 * @param string $ip:$port [][1]
+		 * @param int $timeOut [][2]
+		 * @param string $ip [][3]
+		 * @param string $port [][4]
+		 * @param string $commandHistory [][5] show the last command send by the device
+		 * @param $index [][6] get indexToGet when downloading version to avoid downloading the same data chunk if server is too slow or blocked
+		 * @param array $deviceInfo [][7]
+		 * @param int $percentage [][8] download percentage
+		 * }
 		 */
 
 		 /**
@@ -171,14 +209,14 @@ class BridgeServer extends Application
 
 		  */
 		/**
-		 * @var array $responseArray
-		 * Response array return from CommandDetect
-		 * [0] = $indexToGet;
-		 * [1] = $response.$footer;
-		 * [2] = $deviceInfo;
-		 * [3] = $percentage;
+		 * @var array $responseArray {
+		 * 		Summary of responseArray
+		 * 		@param int $indexToGet [0].
+		 * 		@param string - $response.$footer [1].
+		 * 		@param array $deviceInfo [2].
+		 * 		@param int $percentage [3] software version download percentage.
+		 * }
 		 */
-
 		/** @var array $deviceInfo
 		*  	[id] =>
 		*	[device_family_id] =>
@@ -205,11 +243,6 @@ class BridgeServer extends Application
 		*	[update_comment] => NOTUSED
 		*	[country]
 		*	[city]
-		*/
-
-		/**
-		 * @var array $clientsInfo
-		 * array of sn connected as key and array of info linked to this sn as values (ex: [WIN0D_TEST_61706    ] => Array), the subarray is a key-index paired with each info (ex: [1] => 'ip address : port')
 		 */
 		$this->preflight();
 		$request = new DbRequest();
@@ -232,7 +265,8 @@ class BridgeServer extends Application
 					if(isset($clientsInfo[$i][2])){
 						// If process takes too much time, close socket
 						if($clientsInfo[$i][2] < hrtime(true)){
-							$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $i);
+							//$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $i);
+							$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $clientsInfo[$i][0], $clientsInfo[$i][1], $i);
 							$clients = $disconnectArray[0];
 							$clientsInfo = $disconnectArray[1];
 						}
@@ -320,12 +354,12 @@ class BridgeServer extends Application
 								$task = new CommandDetect();
 								$clientServeur = new Client(); // Client to communicate data to Azure Server
 								$sn = substr($data, 0, 20);
-								$deviceType = hexdec($data[3].$data[4]);
 								$clientsInfo[$deviceKey][0] = $sn; // Show serial number in terminal
 								$deviceCommand = $data[20].$data[21];
 
-								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $deviceFamilyRepository);
-
+								//$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7], $deviceFamilyRepository);
+								$responseArray = $task->start($data, $clientsInfo[$deviceKey][3], $clientsInfo[$deviceKey][7]);
+								//$clientResponse = $clientServeur->main($data); // Client to communicate data to Azure Server
 								if ($responseArray != False) {
 									// récupérer deviceInfo
 									if (array_key_exists(2, $responseArray)) {
@@ -337,9 +371,10 @@ class BridgeServer extends Application
 										$indexToGet = $responseArray[0];
 										//register dc index in array
 										if ($indexToGet != $clientsInfo[$deviceKey][6]) {
-											socket_write($clients[$deviceKey], $responseArray[1]);
+											socket_write($clients[$deviceKey], $responseArray[1]); // il faut que le response array vienne d'azur ???
 											$clientsInfo[$deviceKey][6] = $indexToGet;
 											$clientServeur->main($data); // Client to communicate data to Azure Server
+
 										}
 									}
 									// Check & show percentage number
@@ -362,6 +397,8 @@ class BridgeServer extends Application
 									else {
 										//print_r($responseArray[1]);
 										socket_write($clients[$deviceKey], $responseArray[1]);
+										//var_dump(bin2hex($responseArray[1]));
+										//var_dump(bin2hex($clientResponse));
 										//echo bin2hex($responseArray[1]);
 										$clientServeur->main($data); // Client to communicate data to Azure Server
 									}
@@ -384,22 +421,9 @@ class BridgeServer extends Application
 										{
 											if($i!=$deviceKey)
 											{
-												$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $i);
+												$disconnectArray = $this->disconnect($request, $logger, $clientsInfo, $clients, $clientsInfo[$i][0], $clientsInfo[$i][1], $i);
 												$clients = $disconnectArray[0];
 												$clientsInfo = $disconnectArray[1];
-												/*
-												echo("socket is closed :".$clientsInfo[$i][0]."with key: ".$i);
-												$logger->info("Socket is closed :".$clientsInfo[$i][0]."with key: ".$i);
-												//$this->writeServerLog("socket is closed :".$clientsInfo[$i][0]."with key: ".$i);
-												$key2del = array_search($this->linkConnection[$clientsInfo[$deviceKey][0]][0], $clients);
-
-												//$request->setConnect(0, $clientsInfo[$i][0]);
-												socket_close($clients[$i]);
-												unset($clients[$i]);
-												unset($clientsInfo[$i]);
-												//array_splice($clients, $i, 1);
-												//array_splice($clientsInfo, $i, 1);
-												*/
 											}
 										}
 									}

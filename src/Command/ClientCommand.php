@@ -33,6 +33,6 @@ class ClientCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $client = new Client();
-        $client->main();
+        $client->main("hello");
     }
 }
