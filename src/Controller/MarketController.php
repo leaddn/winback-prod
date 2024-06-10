@@ -17,6 +17,7 @@ class MarketController extends AbstractController
     #[Route('/{_locale<%app.supported_locales%>}/user/market', name: 'app_market')]
     public function index(DeviceRepository $deviceRepository, Request $request, PaginatorInterface $paginator): Response
     {
+        
         $data = new SearchData();
         $data->page = $request->get('page', 1);
         $form = $this->createForm(SearchDeviceType::class, $data);
@@ -26,13 +27,14 @@ class MarketController extends AbstractController
             $this->addFlash(
                 'error', 'Device(s) not found, please try again !'
             );
-            return $this->redirectToRoute('device');
+            return $this->redirectToRoute('app_market');
         }
-
+        
         /* Add upload */
+        /*
         $uploadForm = $this->createForm(UploadImageType::class, $device);
         $uploadForm->handleRequest($request);
-
+        */
         return $this->render('market/index.html.twig', [
             'controller_name' => 'MarketController',
             'devices' => $devices,
