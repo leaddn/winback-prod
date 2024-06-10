@@ -14,16 +14,4 @@ server:
     resource: ../src/Server/
     type: annotation
 
-error_404:
-    path: /error_404
-    controller:    Symfony\Bundle\FrameworkBundle\Controller\TemplateController
-    defaults:
-        template:    mail/error_404.html.twig
-
-protocol:
-    path: /user/proto/protocol
-    controller:    Symfony\Bundle\FrameworkBundle\Controller\TemplateController
-    defaults:
-        template:    protocol.html.twig
-
 
